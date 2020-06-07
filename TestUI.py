@@ -18,12 +18,12 @@ def about():
 def chooseColor():
     color = askcolor()
 
+def circleClick(event):
+    chooseColor()
+
 root = Tk()
 menu = Menu(root)
 
-canvas = Canvas(root, height=500, width=500)
-canvas.pack()
-canvas.create_oval(50, 50, 100, 100)
 root.config(menu=menu)
 fileMenu = Menu(menu, tearoff=False)
 menu.add_cascade(label="File", menu=fileMenu)
@@ -39,5 +39,11 @@ helpMenu.add_command(label="About...", command=about)
 root.minsize(1200, 600) 
 
 Button(text = 'hi ben', command = chooseColor).pack()
+
+canvas = Canvas(root, height=500, width=500)
+canvas.pack()
+coords = 50, 50, 100, 100
+circleOne = canvas.create_oval(coords, fill='red')
+canvas.tag_bind(circleOne, '<Double-1>', circleClick)
 
 mainloop()
