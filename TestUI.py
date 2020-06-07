@@ -18,9 +18,11 @@ def about():
 root = Tk()
 menu = Menu(root)
 
-dot = Canvas(root, create_image=PhotoImage(name="Dot", ))
+canvas = Canvas(root, height=500, width=500)
+canvas.pack()
+canvas.create_oval(50, 50, 100, 100)
 root.config(menu=menu)
-fileMenu = Menu(menu)
+fileMenu = Menu(menu, tearoff=False)
 menu.add_cascade(label="File", menu=fileMenu)
 fileMenu.add_command(label="New", command=new_file)
 fileMenu.add_command(label="Open...", command=open_file)
