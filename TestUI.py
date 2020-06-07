@@ -31,4 +31,6 @@ helpMenu = Menu(menu)
 menu.add_cascade(label="Help", menu=helpMenu)
 helpMenu.add_command(label="About...", command=about)
 
+root.minsize(1200, 600) 
+
 mainloop()
