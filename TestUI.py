@@ -15,11 +15,21 @@ def open_file():
 def about():
     print("This is a simple example of a menu")
 
-def chooseColor():
+
+def choose_color():
     color = askcolor()
 
-def circleClick(event):
-    chooseColor()
+
+def circle_click(event = None, object = canvas.create_oval()):
+    # color = askcolor()
+    print(object)
+    # change_color(self, color)
+
+
+def change_color(self, color):
+    canvas.itemconfig(self, fill = color[1])
+
+
 
 root = Tk()
 menu = Menu(root)
@@ -38,12 +48,12 @@ helpMenu.add_command(label="About...", command=about)
 
 root.minsize(1200, 600) 
 
-Button(text = 'hi ben', command = chooseColor).pack()
+Button(text = 'hi ben', command = choose_color).pack()
 
 canvas = Canvas(root, height=500, width=500)
 canvas.pack()
 coords = 50, 50, 100, 100
 circleOne = canvas.create_oval(coords, fill='red')
-canvas.tag_bind(circleOne, '<Double-1>', circleClick)
+canvas.tag_bind(circleOne, '<Double-1>', circle_click(circleOne))
 
 mainloop()
