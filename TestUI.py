@@ -17,6 +17,8 @@ def about():
 
 root = Tk()
 menu = Menu(root)
+
+dot = Canvas(root, create_image=PhotoImage(name="Dot", ))
 root.config(menu=menu)
 fileMenu = Menu(menu)
 menu.add_cascade(label="File", menu=fileMenu)
