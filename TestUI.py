@@ -2,6 +2,7 @@ from tkinter import *
 from tkinter.filedialog import askopenfilename
 from tkinter.colorchooser import *
 
+color = 'black'
 
 def new_file():
     print("New File!")
@@ -16,7 +17,9 @@ def about():
     print("This is a simple example of a menu")
 
 def chooseColor():
+    global color
     color = askcolor()
+    canvas.create_oval(coords, fill=color[1])
 
 def circleClick(event):
     chooseColor()
@@ -43,7 +46,7 @@ Button(text = 'hi ben', command = chooseColor).pack()
 canvas = Canvas(root, height=500, width=500)
 canvas.pack()
 coords = 50, 50, 100, 100
-circleOne = canvas.create_oval(coords, fill='red')
+circleOne = canvas.create_oval(coords, fill=color)
 canvas.tag_bind(circleOne, '<Double-1>', circleClick)
 
 mainloop()
