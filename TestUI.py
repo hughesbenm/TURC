@@ -1,5 +1,6 @@
 from tkinter import *
 from tkinter.filedialog import askopenfilename
+from tkinter.colorchooser import *
 
 
 def new_file():
@@ -14,6 +15,8 @@ def open_file():
 def about():
     print("This is a simple example of a menu")
 
+def chooseColor():
+    color = askcolor()
 
 root = Tk()
 menu = Menu(root)
@@ -34,5 +37,7 @@ menu.add_cascade(label="Help", menu=helpMenu)
 helpMenu.add_command(label="About...", command=about)
 
 root.minsize(1200, 600) 
+
+Button(text = 'hi ben', command = chooseColor).pack()
 
 mainloop()
