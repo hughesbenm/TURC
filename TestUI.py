@@ -3,6 +3,24 @@ from tkinter.filedialog import askopenfilename
 from tkinter.colorchooser import *
 
 color = 'black', 'black'
+COORDS = 50, 50, 100, 100
+
+class Neuron:
+    # default constructor
+    def __init__(self):
+        self.node = canvas.create_oval(COORDS)
+        canvas.tag_bind(self.node, '<Double-1>', self.circle_click)
+
+
+    def set_background(self, event = None):
+        color = askcolor()
+        canvas.itemconfig(self.node, fill = color)
+    
+
+    def circle_click(self, event):
+        print('hi')
+        set_background(self)
+
 
 def new_file():
     print("New File!")
@@ -16,34 +34,20 @@ def open_file():
 def about():
     print("This is a simple example of a menu")
 
-<<<<<<< HEAD
-
-def choose_color():
-    color = askcolor()
-
-
-def circle_click(event = None, object = canvas.create_oval()):
-    # color = askcolor()
-    print(object)
-    # change_color(self, color)
-
-
-def change_color(self, color):
-    canvas.itemconfig(self, fill = color[1])
-
-
-=======
 def chooseColor():
     global color
     color = askcolor()
+    print(color[1])
 
 def circleClick(event):
     canvas.create_oval(200, 200, 300, 300, fill=color[1])
-    chooseColor()
->>>>>>> master
 
+    chooseColor()
+
+global root 
 root = Tk()
-menu = Menu(root)
+global menu 
+menu= Menu(root)
 
 root.config(menu=menu)
 fileMenu = Menu(menu, tearoff=False)
@@ -59,17 +63,13 @@ helpMenu.add_command(label="About...", command=about)
 
 root.minsize(1200, 600) 
 
-Button(text = 'hi ben', command = choose_color).pack()
+Button(text = 'hi ben', command = chooseColor).pack()
 
+global canvas 
 canvas = Canvas(root, height=500, width=500)
 canvas.pack()
 coords = 50, 50, 100, 100
-<<<<<<< HEAD
-circleOne = canvas.create_oval(coords, fill='red')
-canvas.tag_bind(circleOne, '<Double-1>', circle_click(circleOne))
-=======
-circleOne = canvas.create_oval(coords, fill=color[1])
-canvas.tag_bind(circleOne, '<Double-1>', circleClick)
->>>>>>> master
+
+a = Neuron()
 
 mainloop()

@@ -4,10 +4,22 @@ from tkinter.colorchooser import *
 
 global root 
 global menu 
-global canvas
+
 
 root = Tk()
 menu= Menu(root)
+
+def new_file():
+    print("New File!")
+
+
+def open_file():
+    name = askopenfilename()
+    print(name)
+
+
+def about():
+    print("This is a simple example of a menu")
 
 root.config(menu=menu)
 fileMenu = Menu(menu, tearoff=False)
@@ -25,6 +37,6 @@ root.minsize(1200, 600)
 
 canvas = Canvas(root, height=500, width=500)
 canvas.pack()
-coords = 50, 50, 100, 100
+
 
 mainloop()
