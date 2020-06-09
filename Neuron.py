@@ -44,11 +44,8 @@ class Layer:
         self.layer.append(Neuron())
     
     def next_location(self):
-        coords[0] = coords[2]
-        coords[1] = coords[3]
-        coords[2] = coords[0] + 50
-        coords[3] = coords[1] + 50
-        print('maybe')
+        coords[1] += 60
+        coords[3] += 60
     
 
 class NeuralNetwork:
@@ -59,7 +56,7 @@ class NeuralNetwork:
     def add_layer(self):
         self.network.append(Layer())
         canvas.update()
-        print('add_layer')
+
 
     def get_network(self):
         return self.network
