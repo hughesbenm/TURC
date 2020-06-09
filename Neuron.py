@@ -5,63 +5,82 @@ from tkinter.colorchooser import *
 global canvas
 global root
 global menu
+global WIN_WIDTH
+global WIN_HEIGHT
+global DEFAULT_Y
+
+WIN_WIDTH = 1200
+WIN_HEIGHT = 600
+DEFAULT_Y = 50
 
 root = Tk()
+root.minsize(WIN_WIDTH, WIN_HEIGHT)
 menu = Menu(root)
 canvas = Canvas(root, height=500, width=500)
+
 canvas.pack()
 
 coords = [50, 50, 100, 100]
 
 class Neuron:
     # default constructor
-    def __init__(self):
-        self.node = canvas.create_oval(coords, fill = 'black')
+    def __init__(self, color, x, y):
+        self.node = canvas.create_oval(x, y, x + 50, y + 50, fill = color)
         canvas.tag_bind(self.node, '<Button-3>', self.circle_click)
 
 
-    def set_background(self, event = None):
-        color = askcolor()
-        canvas.itemconfig(self.node, fill = color[1])
+    def set_background(self, color, event = None):
+        canvas.itemconfig(self.node, fill = color)
     
 
     def circle_click(self, event = None):
-        self.set_background()
+        self.set_background('green')
     
 
 class Layer:
-    def __init__(self):
-        self.layer = [Neuron()]
-        self.next_location()
+    def __init__(self, x, y):
+        self.CONST_X = x
+        self.last_y = y
+        self.color = 'black'
+        self.layer = [Neuron(self.color, self.CONST_X, self.last_y)]
 
 
-    def set_color(self, color):
+    def set_color(self, event = None):
+        self.color = askcolor()[1]
         for i in self.layer:
-            i.set_background(color)
-    
+            i.set_background(self.color)
+
 
     def add_neuron(self):
-        self.layer.append(Neuron())
-    
+        self.next_location()
+        self.layer.append(Neuron(self.color, self.CONST_X, self.last_y))
+
     def next_location(self):
-        coords[1] += 60
-        coords[3] += 60
+        self.last_y += 100
     
 
 class NeuralNetwork:
     def __init__(self):
-        self.network = [Layer()]
+        self.input = Layer(50, DEFAULT_Y)
+        self.output = Layer(250, DEFAULT_Y)
+        self.hidden = [Layer(150, DEFAULT_Y)]
+        self.last_x = 250
 
-    
+        self.network = [self.input, self.output, self.hidden[0]]
+        root.bind('<Return>', self.hidden[0].set_color)
+
     def add_layer(self):
-        self.network.append(Layer())
+        self.last_x += 100
+        self.network.append(Layer(self.last_x, DEFAULT_Y))
         canvas.update()
-
 
     def get_network(self):
         return self.network
 
 
 app = NeuralNetwork()
-test = Button(text = 'add', command = app.add_layer).pack()
+layer_button = Button(text = 'add', command = app.add_layer).pack()
+add_neuron_button = Button(text = 'add input neuron', command = app.network[0].add_neuron).pack()
+add_neuron_button = Button(text = 'add out neuron', command = app.network[1].add_neuron).pack()
+add_neuron_button = Button(text = 'add hidden neuron', command = app.network[2].add_neuron).pack()
 root.mainloop()
