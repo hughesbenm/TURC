@@ -44,7 +44,7 @@ def circleClick(event):
 
     chooseColor()
 
-global root 
+global root
 root = Tk()
 global menu 
 menu= Menu(root)
