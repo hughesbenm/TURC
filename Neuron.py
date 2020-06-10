@@ -37,10 +37,12 @@ class Layer:
         self.num_neurons = 1
         canvas.tag_bind(self.layer[0].get_tag(), '<Button-3>', self.set_color)
 
+
     def set_color(self, event = None):
         self.color = askcolor()[1]
         for i in self.layer:
             i.set_background(self.color)
+
 
     def add_neuron(self):
         self.num_neurons += 1
@@ -48,35 +50,49 @@ class Layer:
         self.layer.append(Neuron(self.color, self.CONST_X, self.last_y))
         canvas.tag_bind(self.layer[self.num_neurons - 1].get_tag(), '<Button-3>', self.set_color)
 
+
     def next_location(self):
         self.last_y += 100
+    
+
+    def get_x(self):
+        return self.CONST_X
+
+    def set_x(self, x):
+        self.CONST_X = x
 
 
 class NeuralNetwork:
     def __init__(self):
         self.input = Layer(50, DEFAULT_Y)
+        self.input_index = 0 #not necessary
+
         self.output = Layer(250, DEFAULT_Y)
-        self.hidden = [Layer(150, DEFAULT_Y)]
+        self.output_index = 1
+
         self.last_x = 250
-
-        self.input.add_neuron()
-        self.hidden[0].add_neuron()
-        self.hidden[0].add_neuron()
-
-        self.network = [self.input, self.output, self.hidden[0]]
+        
+        self.network = [self.input, self.output]
 
     def add_layer(self):
         self.last_x += 100
-        self.network.append(Layer(self.last_x, DEFAULT_Y))
+        self.network.append(self.network[self.output_index])
+        self.network[self.output_index] = Layer(self.last_x, DEFAULT_Y)
+        self.output_index += 1
+        self.network[self.output_index].set_x(self.last_x)
         canvas.update()
+
 
     def get_network(self):
         return self.network
 
+    def get_output_index(self):
+        return self.output_index
+
 
 app = NeuralNetwork()
-layer_button = Button(text = 'add', command = app.add_layer).pack()
-Button(text = 'add input neuron', command = app.network[0].add_neuron).pack()
-Button(text = 'add out neuron', command = app.network[1].add_neuron).pack()
-Button(text = 'add hidden neuron', command = app.network[2].add_neuron).pack()
+Button(text = 'add hidden layer', command = app.add_layer).pack()
+Button(text = 'add input neuron').pack()
+Button(text = 'add out neuron', command = app.network[app.get_output_index()].add_neuron).pack()
+Button(text = 'add hidden neuron').pack()
 root.mainloop()
