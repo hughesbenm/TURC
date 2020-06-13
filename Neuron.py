@@ -6,6 +6,7 @@ WIN_WIDTH = 1200
 WIN_HEIGHT = 600
 DEFAULT_Y = 50
 
+
 root = Tk()
 root.minsize(WIN_WIDTH, WIN_HEIGHT)
 menu = Menu(root)
@@ -18,8 +19,8 @@ coords = [50, 50, 100, 100]
 
 class Neuron:
     # default constructor
-    def __init__(self, color, x, y):
-        self.node = canvas.create_oval(x, y, x + 50, y + 50, fill = color)
+    def __init__(self, color, x, y, radius):
+        self.node = canvas.create_oval(x - radius, y - radius, x + radius, y + radius, fill = color)
 
     def set_background(self, color):
         canvas.itemconfig(self.node, fill = color)
@@ -33,7 +34,7 @@ class Layer:
         self.CONST_X = x
         self.last_y = y
         self.color = 'black'
-        self.layer = [Neuron(self.color, self.CONST_X, self.last_y)]
+        self.layer = [Neuron(self.color, self.CONST_X, self.last_y, 25)]
         self.num_neurons = 1
         canvas.tag_bind(self.layer[0].get_tag(), '<Button-3>', self.set_color)
 
@@ -45,7 +46,7 @@ class Layer:
     def add_neuron(self):
         self.num_neurons += 1
         self.next_location()
-        self.layer.append(Neuron(self.color, self.CONST_X, self.last_y))
+        self.layer.append(Neuron(self.color, self.CONST_X, self.last_y, 25))
         canvas.tag_bind(self.layer[self.num_neurons - 1].get_tag(), '<Button-3>', self.set_color)
 
     def next_location(self):
