@@ -83,8 +83,16 @@ class NeuralNetwork:
     def get_network(self):
         return self.network
 
+    def popup_settings(self):
+        settings = Tk()
+        frame = Frame(root)
+        settings.focus_force()
+        settings.mainloop()
+
 
 app = NeuralNetwork()
+menu.add_command(label="Settings", command=app.popup_settings)
+root.config(menu=menu)
 Button(text = 'add', command = app.add_layer).pack()
 Button(text = 'add input neuron', command = app.network[0].add_neuron).pack()
 Button(text = 'add out neuron', command = app.network[1].add_neuron).pack()
