@@ -4,17 +4,19 @@ from tkinter.colorchooser import *
 
 WIN_WIDTH = 1200
 WIN_HEIGHT = 600
-CAN_WIDTH = 1100
-CAN_HEIGHT = 500
+CAN_WIDTH = 1200
+CAN_HEIGHT = 600
 DEFAULT_Y = 50
 
 
 root = Tk()
 root.minsize(WIN_WIDTH, WIN_HEIGHT)
+root.config()
 menu = Menu(root)
-canvas = Canvas(root, height=CAN_HEIGHT, width=CAN_WIDTH)
+canvas = Canvas(root, height=CAN_HEIGHT, width=CAN_WIDTH, bg='green')
 
 canvas.pack()
+canvas.place(anchor = SE, height = CAN_HEIGHT, width = CAN_WIDTH)
 
 
 def coords(x, y, radius):
@@ -85,16 +87,21 @@ class NeuralNetwork:
 
     def popup_settings(self):
         settings = Tk()
-        frame = Frame(root)
+        settings.minsize(500, 500)
+        buttons = Canvas(settings, width=1000, height=500, bg='red')
+        buttons.pack(side=BOTTOM)
         settings.focus_force()
+        Button(buttons, text = 'Apply', command=settings.destroy, width=10, height=10).pack(side = RIGHT)
+        Button(buttons, text='Close', command=settings.destroy).pack(side=LEFT)
         settings.mainloop()
 
 
 app = NeuralNetwork()
+root.update_idletasks()
 menu.add_command(label="Settings", command=app.popup_settings)
 root.config(menu=menu)
-Button(text = 'add', command = app.add_layer).pack()
-Button(text = 'add input neuron', command = app.network[0].add_neuron).pack()
-Button(text = 'add out neuron', command = app.network[1].add_neuron).pack()
-Button(text = 'add hidden neuron', command = app.network[2].add_neuron).pack()
+Button(canvas, text = 'add', command = app.add_layer).pack(side = BOTTOM)
+Button(canvas, text = 'add input neuron', command = app.network[0].add_neuron).pack(side = BOTTOM)
+Button(canvas, text = 'add out neuron', command = app.network[1].add_neuron).pack(side = BOTTOM)
+Button(canvas, text = 'add hidden neuron', command = app.network[2].add_neuron).pack(side = BOTTOM)
 root.mainloop()
