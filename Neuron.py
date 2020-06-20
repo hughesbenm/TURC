@@ -4,8 +4,8 @@ from tkinter.colorchooser import *
 
 WIN_WIDTH = 1200
 WIN_HEIGHT = 600
-CAN_WIDTH = 1200
-CAN_HEIGHT = 600
+CAN_WIDTH = 1100
+CAN_HEIGHT = 500
 DEFAULT_Y = 50
 
 
@@ -13,10 +13,11 @@ root = Tk()
 root.minsize(WIN_WIDTH, WIN_HEIGHT)
 root.config()
 menu = Menu(root)
-canvas = Canvas(root, height=CAN_HEIGHT, width=CAN_WIDTH, bg='green')
+canvas = Canvas(root, height=CAN_HEIGHT, width=CAN_WIDTH)
 
 canvas.pack()
-canvas.place(anchor = SE, height = CAN_HEIGHT, width = CAN_WIDTH)
+canvas.place(anchor = CENTER, relheight = .95, relwidth = 0.95, relx = 0.5, rely = 0.5)
+canvas.update()
 
 
 def coords(x, y, radius):
@@ -55,7 +56,7 @@ class Layer:
     def add_neuron(self):
         self.layer.append(Neuron(self.color, self.CONST_X, self.y_interval, 25))
         self.num_neurons += 1
-        self.y_interval = CAN_HEIGHT / (self.num_neurons + 1)
+        self.y_interval = canvas.winfo_height() / (self.num_neurons + 1)
         for i in range(self.num_neurons):
             canvas.coords(self.layer[i].get_tag(), coords(self.CONST_X, self.y_interval * (i + 1), 25))
         canvas.tag_bind(self.layer[self.num_neurons - 1].get_tag(), '<Button-3>', self.set_color)
@@ -66,9 +67,9 @@ class Layer:
 
 class NeuralNetwork:
     def __init__(self):
-        self.input = Layer(CAN_WIDTH / 4, CAN_HEIGHT / 2, 'red')
-        self.hidden = [Layer(CAN_WIDTH / 2, CAN_HEIGHT / 2)]
-        self.output = Layer(CAN_WIDTH / 4 * 3, CAN_HEIGHT / 2, 'blue')
+        self.input = Layer(canvas.winfo_width() / 4, canvas.winfo_height() / 2, 'red')
+        self.hidden = [Layer(canvas.winfo_width() / 2, canvas.winfo_height() / 2)]
+        self.output = Layer(canvas.winfo_width() / 4 * 3, canvas.winfo_height() / 2, 'blue')
         self.last_x = WIN_WIDTH / 4 * 3
 
         self.input.add_neuron()
