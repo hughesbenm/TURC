@@ -89,11 +89,14 @@ class NeuralNetwork:
     def popup_settings(self):
         settings = Tk()
         settings.minsize(500, 500)
-        buttons = Canvas(settings, width=1000, height=500, bg='red')
-        buttons.pack(side=BOTTOM)
+        buttons = Frame(settings, width=200, height=500, bg='red')
+        buttons.pack(side=BOTTOM, fill = BOTH)
         settings.focus_force()
-        Button(buttons, text = 'Apply', command=settings.destroy, width=10, height=10).pack(side = RIGHT)
-        Button(buttons, text='Close', command=settings.destroy).pack(side=LEFT)
+        buttons.grid_columnconfigure(0, weight = 1)
+        butt1 = Button(buttons, text = 'Apply', command=settings.destroy)
+        butt1.grid(column = 1, row = 0, padx = 10, pady = 5)
+        butt2 = Button(buttons, text='Close', command=settings.destroy)
+        butt2.grid(column = 2, row = 0, padx = 10, pady = 5)
         settings.mainloop()
 
 
