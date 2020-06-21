@@ -43,10 +43,12 @@ class Layer:
     def update_layer(self):
         if self.desired_neurons > self.num_neurons:
             for i in range(self.desired_neurons - self.num_neurons):
-                self.add_neuron()
+                self.layer.append(Neuron(self.color, self.CONST_X, self.y_interval, 25))
         if self.desired_neurons < self.num_neurons:
             for i in range(self.num_neurons - self.desired_neurons):
-                self.subtract_neuron()
+                canvas.delete(self.layer.pop().get_tag())
+        self.num_neurons = self.desired_neurons
+        self.orient_neurons()
 
     def __init__(self, x, y, color='black'):
         self.CONST_X = x
@@ -66,18 +68,19 @@ class Layer:
         self.layer.append(Neuron(self.color, self.CONST_X, self.y_interval, 25))
         self.num_neurons += 1
         self.desired_neurons += 1
-        self.y_interval = canvas.winfo_height() / (self.num_neurons + 1)
-        for i in range(self.num_neurons):
-            canvas.coords(self.layer[i].get_tag(), coords(self.CONST_X, self.y_interval * (i + 1), 25))
         canvas.tag_bind(self.layer[self.num_neurons - 1].get_tag(), '<Button-3>', self.set_color)
+        self.orient_neurons()
 
     def subtract_neuron(self):
         canvas.delete(self.layer.pop().get_tag())
         self.num_neurons -= 1
         self.desired_neurons -= 1
+        self.orient_neurons()
 
-    def next_location(self):
-        self.y_interval += self.y_interval
+    def orient_neurons(self):
+        self.y_interval = canvas.winfo_height() / (self.num_neurons + 1)
+        for i in range(self.num_neurons):
+            canvas.coords(self.layer[i].get_tag(), coords(self.CONST_X, self.y_interval * (i + 1), 25))
 
 
 class NeuralNetwork:
@@ -127,19 +130,26 @@ class NeuralNetwork:
         settings = Tk()
         settings.focus_force()
         settings.minsize(500, 500)
-        buttons = Frame(settings, width=200, height=500, bg='red')
+
         sett_frame = Frame(settings, width = 200, height = 500, bg ='green')
+        sett_frame.pack(side = TOP, fill = BOTH)
+
+        add_neuron = Button(sett_frame, text='\u22C0', command = self.add_input_desired)
+        add_neuron.grid(column = 0, row = 0, padx = 10)
+        subtract_neuron = Button(sett_frame, text='\u22C1', command = self.subtract_input_desired)
+        subtract_neuron.grid(column = 0, row = 1, padx = 10)
+        num_neurons = Entry(sett_frame, textvariable = IntVar(settings, self.input.desired_neurons))
+        num_neurons.grid(column = 1, rowspan = 2, row = 0)
+
+        buttons = Frame(settings, width=200, height=500, bg='red')
         buttons.pack(side=BOTTOM, fill = BOTH)
         buttons.grid_columnconfigure(0, weight = 1)
-        sett_frame.pack(side = TOP, fill = BOTH)
-        add_neuron = Button(sett_frame, text='\u22C0', command = self.add_input_desired)
-        add_neuron.grid(column = 0, row = 0, padx = 10, pady = 5)
-        subtract_neuron = Button(sett_frame, text='\u22C1', command = self.subtract_input_desired)
-        subtract_neuron.grid(column = 0, row = 1, padx = 10, pady = 5)
+
         butt1 = Button(buttons, text = 'Apply', command = lambda: self.update_network(settings))
         butt1.grid(column = 1, row = 0, padx = 10, pady = 5)
         butt2 = Button(buttons, text='Close', command = settings.destroy)
         butt2.grid(column = 2, row = 0, padx = 10, pady = 5)
+
         settings.mainloop()
 
 
