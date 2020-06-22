@@ -40,16 +40,6 @@ class Neuron:
 
 
 class Layer:
-    def update_layer(self):
-        if self.desired_neurons > self.num_neurons:
-            for i in range(self.desired_neurons - self.num_neurons):
-                self.layer.append(Neuron(self.color, self.CONST_X, self.y_interval, 25))
-        if self.desired_neurons < self.num_neurons:
-            for i in range(self.num_neurons - self.desired_neurons):
-                canvas.delete(self.layer.pop().get_tag())
-        self.num_neurons = self.desired_neurons
-        self.orient_neurons()
-
     def __init__(self, x, y, color='black'):
         self.CONST_X = x
         self.y_interval = y
@@ -57,7 +47,25 @@ class Layer:
         self.layer = [Neuron(self.color, self.CONST_X, self.y_interval, 25)]
         self.num_neurons = 1
         self.desired_neurons = 1
-        canvas.tag_bind(self.layer[0].get_tag(), '<Button-3>', self.set_color)
+        canvas.tag_bind(self.layer[0].get_tag(), '<Button-3>', self.popup_layer_settings)
+
+    def layer_apply(self, settings, num_neurons_var):
+        self.desired_neurons = num_neurons_var.get()
+        settings.destroy()
+        if self.desired_neurons > self.num_neurons:
+            for i in range(self.desired_neurons - self.num_neurons):
+                self.layer.append(Neuron(self.color, self.CONST_X, self.y_interval, 25))
+                canvas.tag_bind(self.layer[-1].get_tag(), '<Button-3>', self.popup_layer_settings)
+        if self.desired_neurons < self.num_neurons:
+            for i in range(self.num_neurons - self.desired_neurons):
+                canvas.delete(self.layer.pop().get_tag())
+        self.num_neurons = self.desired_neurons
+        self.orient_neurons()
+
+    def layer_close(self, settings, num_neurons_var):
+        settings.destroy()
+        num_neurons_var.set(self.num_neurons)
+        self.desired_neurons = self.num_neurons
 
     def set_color(self, event = None):
         self.color = askcolor()[1]
@@ -68,7 +76,7 @@ class Layer:
         self.layer.append(Neuron(self.color, self.CONST_X, self.y_interval, 25))
         self.num_neurons += 1
         self.desired_neurons += 1
-        canvas.tag_bind(self.layer[self.num_neurons - 1].get_tag(), '<Button-3>', self.set_color)
+        canvas.tag_bind(self.layer[self.num_neurons - 1].get_tag(), '<Button-3>', self.popup_layer_settings)
         self.orient_neurons()
 
     def subtract_neuron(self):
@@ -81,6 +89,43 @@ class Layer:
         self.y_interval = canvas.winfo_height() / (self.num_neurons + 1)
         for i in range(self.num_neurons):
             canvas.coords(self.layer[i].get_tag(), coords(self.CONST_X, self.y_interval * (i + 1), 25))
+
+    def add_desired(self, num_neurons_var):
+        self.desired_neurons += 1
+        num_neurons_var.set(self.desired_neurons)
+        print(self.desired_neurons)
+
+    def subtract_desired(self, num_neurons_var):
+        self.desired_neurons -= 1
+        num_neurons_var.set(self.desired_neurons)
+        print(self.desired_neurons)
+
+    def popup_layer_settings(self, event = None):
+        settings = Tk()
+        settings.focus_force()
+        settings.minsize(500, 500)
+
+        sett_frame = Frame(settings, width = 200, height = 500, bg ='green')
+        sett_frame.pack(side = TOP, fill = BOTH)
+
+        num_neurons_var = IntVar(settings, self.desired_neurons)
+        add_neuron = Button(sett_frame, text='\u22C0', command = lambda: self.add_desired(num_neurons_var))
+        add_neuron.grid(column = 0, row = 0, padx = 10)
+        subtract_neuron = Button(sett_frame, text='\u22C1', command = lambda: self.subtract_desired(num_neurons_var))
+        subtract_neuron.grid(column = 0, row = 1, padx = 10)
+        num_neurons_entry = Entry(sett_frame, textvariable = num_neurons_var)
+        num_neurons_entry.grid(column = 1, rowspan = 2, row = 0)
+
+        buttons = Frame(settings, width=200, height=500, bg='red')
+        buttons.pack(side=BOTTOM, fill = BOTH)
+        buttons.grid_columnconfigure(0, weight = 1)
+
+        butt1 = Button(buttons, text = 'Apply', command = lambda: self.layer_apply(settings, num_neurons_var))
+        butt1.grid(column = 1, row = 0, padx = 10, pady = 5)
+        butt2 = Button(buttons, text='Close', command = lambda: self.layer_close(settings, num_neurons_var))
+        butt2.grid(column = 2, row = 0, padx = 10, pady = 5)
+
+        settings.mainloop()
 
 
 class NeuralNetwork:
@@ -113,49 +158,10 @@ class NeuralNetwork:
     def get_network(self):
         return self.network
 
-    def update_network(self, settings):
-        settings.destroy()
-        for layer in self.network:
-            layer.update_layer()
-
-    def add_input_desired(self):
-        self.input.desired_neurons += 1
-        print(self.input.desired_neurons)
-
-    def subtract_input_desired(self):
-        self.input.desired_neurons -= 1
-        print(self.input.desired_neurons)
-
-    def popup_settings(self):
-        settings = Tk()
-        settings.focus_force()
-        settings.minsize(500, 500)
-
-        sett_frame = Frame(settings, width = 200, height = 500, bg ='green')
-        sett_frame.pack(side = TOP, fill = BOTH)
-
-        add_neuron = Button(sett_frame, text='\u22C0', command = self.add_input_desired)
-        add_neuron.grid(column = 0, row = 0, padx = 10)
-        subtract_neuron = Button(sett_frame, text='\u22C1', command = self.subtract_input_desired)
-        subtract_neuron.grid(column = 0, row = 1, padx = 10)
-        num_neurons = Entry(sett_frame, textvariable = IntVar(settings, self.input.desired_neurons))
-        num_neurons.grid(column = 1, rowspan = 2, row = 0)
-
-        buttons = Frame(settings, width=200, height=500, bg='red')
-        buttons.pack(side=BOTTOM, fill = BOTH)
-        buttons.grid_columnconfigure(0, weight = 1)
-
-        butt1 = Button(buttons, text = 'Apply', command = lambda: self.update_network(settings))
-        butt1.grid(column = 1, row = 0, padx = 10, pady = 5)
-        butt2 = Button(buttons, text='Close', command = settings.destroy)
-        butt2.grid(column = 2, row = 0, padx = 10, pady = 5)
-
-        settings.mainloop()
-
 
 app = NeuralNetwork()
 root.update_idletasks()
-menu.add_command(label="Settings", command=app.popup_settings)
+menu.add_command(label="Settings")
 root.config(menu=menu)
 Button(canvas, text = 'add', command = app.add_hidden).pack(side = BOTTOM)
 Button(canvas, text = 'add input neuron', command = app.network[0].add_neuron).pack(side = BOTTOM)
