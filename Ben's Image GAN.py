@@ -1,9 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[1]:
-
-
 from keras.datasets import mnist
 import numpy as np
 import pandas as pds
@@ -40,34 +34,13 @@ def img(img):
     gen_image(img).show()
 
 
-# In[2]:
-
-
 y_training = np.ones(60000)
 y_testing = np.concatenate((np.ones((10000)), np.zeros(2000)), axis=0)
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[3]:
 
 
 dis = Sequential()
 gen = Sequential()
 GAN = Sequential()
-
-
-# In[4]:
 
 
 # gen.add(Dense(196, input_shape=(100,), activation='relu'))
@@ -97,66 +70,25 @@ gen.add(Activation('relu'))
 gen.summary()
 
 
-# In[5]:
-
-
 gen.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
 
-
-# In[6]:
-
-
 fake = gen.predict(np.random.uniform(-1, 1, (10000, 100)))
-
-
-# In[7]:
-
 
 x_testing = np.random.uniform(0, 255, (2000, 28, 28))
 x_testing = np.concatenate((x_test, x_testing), axis=0)
 
-
-# In[8]:
-
-
 x_train[0].shape
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[9]:
 
 
 y_training = np.concatenate((y_training, np.zeros(60000)), axis=0)
 y_training.shape
 
-
-# In[10]:
-
-
 x_training = np.random.randint(0, 255, (50000, 28, 28))
-
-
-# In[11]:
 
 
 x_training = np.concatenate((x_train, x_training), axis=0)
 x_training = np.concatenate((x_training, fake), axis=0)
 x_training.shape
-
-
-# In[12]:
-
 
 dis.add(Dropout(0.6, input_shape=(28, 28,)))
 dis.add(Flatten(input_shape=(28, 28,)))
@@ -167,16 +99,8 @@ dis.add(LeakyReLU(alpha=0.2))
 dis.add(Dense(1, activation='sigmoid'))
 dis.summary()
 
-
-# In[13]:
-
-
 dis.compile(metrics=['accuracy'], loss='binary_crossentropy', optimizer='adam')
 dis.fit(x_training, y_training, batch_size=250, epochs=20, verbose=1, validation_data=(x_testing, y_testing))
-
-
-# In[14]:
-
 
 test = np.random.uniform(0, 255, (1, 28, 28))
 preImg(test, dis)
@@ -188,37 +112,15 @@ while i < 10:
         i += 1
     j += 1
 
-
-# In[ ]:
-
-
-
-
-
-# In[15]:
-
-
 GAN.add(gen)
-
-
-# In[16]:
-
 
 dis.trainable = False
 GAN.add(dis)
-
-
-# In[17]:
-
 
 GAN.summary()
 GAN.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
 pred = gen.predict(np.random.uniform(-1, 1, (1, 100)))
 gen_image(pred).show()
-
-
-# In[19]:
-
 
 for i in range(10000):
     noise = np.random.uniform(-1, 1, (15, 100))
@@ -227,16 +129,9 @@ for i in range(10000):
     loss = GAN.train_on_batch(noise, ones)
     print(loss)
     print("Epoch: " + str(i))
-# GAN.fit(noise, ones, epochs=50000, batch_size=100, verbose=1, validation_split=0.2)
-
-
-# In[ ]:
-
+#
 
 GAN.predict(np.random.uniform(-1, 1, (1, 100)))
-
-
-# In[ ]:
 
 
 pred = gen.predict(np.random.uniform(-1, 1, (1, 100)))
@@ -244,13 +139,7 @@ preImg(pred, dis)
 print(pred)
 
 
-# In[ ]:
-
-
 dis.predict(np.random.uniform(0, 255, (1, 28, 28)))
-
-
-# In[ ]:
 
 
 img = gen.predict(np.random.uniform(-1, 1, (1, 100)))
@@ -258,16 +147,4 @@ img = gen.predict(np.random.uniform(-1, 1, (1, 100)))
 
 pred = gen.predict(np.random.uniform(-1, 1, (1, 100)))
 preImg(pred, dis)
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
 

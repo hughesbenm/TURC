@@ -1,9 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[1]:
-
-
 from keras.datasets import mnist
 import matplotlib.pyplot as plt
 import numpy as np
@@ -23,21 +17,14 @@ from keras.layers import Dropout
 from keras.layers import Conv2D
 from keras.layers.advanced_activations import LeakyReLU
 
-
 TRAIN_ROWS = 20000
 
 PREDICT_ROWS = 80
 
 
-# In[ ]:
-
-
 gen = Sequential()
 dis = Sequential()
 GAN = Sequential()
-
-
-# In[ ]:
 
 
 #This is Differences
@@ -46,10 +33,6 @@ x_train = pds.read_excel(r'C:\Users\Ben\Desktop\Data\DifferencesData.xlsx', usec
 #This is Exact Values
 # x_train = pds.read_excel(r'C:\Users\Ben\Desktop\Data\DifferencesData.xlsx', usecols=[1, 2, 4, 5, 17, 18, 19, 20, 21, 22], nrows=20000)
 x_train.head()
-
-
-# In[ ]:
-
 
 # plt.hist(x_train['START_HOUR'], density=True, bins=50)
 # plt.ylabel('Freq')
@@ -72,30 +55,14 @@ x_train.head()
 #         max = x_train['DIFFERENCE'][i]
 # print(max)
 
-
-# In[ ]:
-
-
 y_train = pds.read_excel(r'C:\Users\Ben\Desktop\Data\DifferencesData.xlsx', usecols=[0], nrows=20000)
 y_train.head()
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
 
 
 # x_predict = pds.read_excel(r'C:\Users\Ben\Desktop\Data\DifferencesData.xlsx', usecols=[17, 28], nrows=PREDICT_ROWS)
 # x_predict.head()
 # x_predict = np.ones((1, 10))
 # x_predict[0] = [-84.32392, -84.32392, 34.0364, 34.0364, 0, 0, 5, 21, 56, 7]
-
-
-# In[ ]:
 
 
 #Differences
@@ -106,14 +73,8 @@ x_test = pds.read_excel(r'C:\Users\Ben\Desktop\Data\DifferencesData.xlsx', skipr
 x_test.head()
 
 
-# In[ ]:
-
-
 y_test = pds.read_excel(r'C:\Users\Ben\Desktop\Data\DifferencesData.xlsx', usecols=[0], skiprows=220000, nrows=2500)
 y_test.head()
-
-
-# In[ ]:
 
 
 gen.add(Dense(75, input_shape=(200,), activation='relu'))
@@ -127,20 +88,11 @@ gen.add(Dense(2, activation='relu'))
 gen.summary()
 
 
-# In[ ]:
-
-
 gen.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
-
-
-# In[ ]:
 
 
 fake = gen.predict(np.random.uniform(-1, 1, (2500, 200)))
 print(fake) 
-
-
-# In[ ]:
 
 
 x_training = np.ones((2500, 2))
@@ -168,42 +120,24 @@ x_training = np.concatenate((x_training, fake))
 print(x_training)
 
 
-# In[ ]:
-
-
 x_training = np.concatenate((x_training, np.random.uniform(-1, 1, (5000, 2))))
 x_training = np.concatenate((x_training, np.zeros((1000, 2))))
 x_training
-
-
-# In[ ]:
 
 
 y_training = np.concatenate((y_train, np.zeros((11000, 1))))
 y_training
 
 
-# In[ ]:
-
-
 x_testing = np.concatenate((x_test, np.random.uniform(-1, 1, (2500, 2))), axis=0)
 x_testing
-
-
-# In[ ]:
 
 
 y_testing = np.concatenate((y_test, np.zeros((2500, 1))), axis=0)
 y_testing
 
 
-# In[ ]:
-
-
 GAN.add(gen)
-
-
-# In[ ]:
 
 
 dis.add(Dropout(0.4, input_shape=(2,)))
@@ -217,14 +151,8 @@ dis.add(Dense(1, activation='sigmoid'))
 dis.summary(0)
 
 
-# In[ ]:
-
-
 print(x_training.shape)
 print(y_training.shape)
-
-
-# In[ ]:
 
 
 # import keras
@@ -234,39 +162,21 @@ dis.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 dis.fit(x_training, y_training, batch_size=1000, epochs=10000, verbose=1, validation_data=(x_testing, y_testing))
 
 
-# In[ ]:
-
-
 # pred = dis.predict(x_predict)
 # print(pred)
-
-
-# In[ ]:
 
 
 dis.trainable = False
 
 
-# In[ ]:
-
-
 GAN.add(dis)
-
-
-# In[ ]:
 
 
 GAN.summary()
 GAN.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
 
 
-# In[ ]:
-
-
 gen.predict(np.random.uniform(-1, 1, (1, 200)))
-
-
-# In[ ]:
 
 
 for i in range(1000):
@@ -281,37 +191,9 @@ for i in range(1000):
     print("Epoch: " + str(i))
 
 
-# In[ ]:
-
-
 random = np.random.uniform(-1, 1, (1, 200))
 print(random)
 data = gen.predict(random)
 print(data)
 pred = dis.predict(data)
 print(pred)
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
