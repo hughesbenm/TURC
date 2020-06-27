@@ -26,6 +26,9 @@ class Neuron:
 
     def get_tag(self):
         return self.node
+    
+    def move_x(self, x):
+        canvas.move(self.node, x, 0)
 
 
 class Layer:
@@ -61,6 +64,11 @@ class Layer:
     def set_x(self, x):
         self.CONST_X = x
 
+    def move_x(self):
+        for i in self.layer:
+            i.move_x(100)
+
+
 
 class NeuralNetwork:
     def __init__(self):
@@ -77,11 +85,14 @@ class NeuralNetwork:
     def add_layer(self):
         self.last_x += 100
         self.network.append(self.network[self.output_index])
-        self.network[self.output_index] = Layer(self.last_x, DEFAULT_Y)
+        # self.network[self.output_index] = Layer(self.last_x, DEFAULT_Y)
+        self.update_output()
         self.output_index += 1
         self.network[self.output_index].set_x(self.last_x)
         canvas.update()
-
+            
+    def update_output(self):
+        self.network[self.output_index].move_x()
 
     def get_network(self):
         return self.network
