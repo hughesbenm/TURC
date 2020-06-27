@@ -144,7 +144,7 @@ class Layer:
         settings.minsize(width = 250, height = 350)
 
         # Frame to include buttons for settings
-        sett_frame = Frame(settings, bg = 'red')
+        sett_frame = Frame(settings)
         # sett_frame.grid_propagate(False)
         sett_frame.pack(side = TOP, fill = X)
 
@@ -159,6 +159,8 @@ class Layer:
         color_label = Label(sett_frame, text = 'Layer Color')
         color_button = Button(sett_frame, bg = self.color, width = 2)
         color_button.config(command = lambda: self.set_desired_color(color_button, sett_frame))
+        var = StringVar(sett_frame)
+        function_dropdown = OptionMenu(sett_frame, var, "one", "two", "three")
 
         # Arranges all buttons
         num_neurons_label.grid(row = 0, column = 0, columnspan = 5, sticky = W)
@@ -169,7 +171,8 @@ class Layer:
         color_label.grid(row = 4, column = 0, columnspan = 4, sticky = W)
         sett_frame.grid_rowconfigure(5)
         color_button.grid(row = 5, column = 0, padx = 5)
-        sett_frame.grid_rowconfigure(6, weight = 1)
+        sett_frame.grid_rowconfigure(6, minsize = 20)
+        function_dropdown.grid(row = 7, column = 0)
 
         # Frame for Apply and Close
         buttons = Frame(settings, width=200, height=500)
@@ -225,7 +228,7 @@ class NeuralNetwork:
 
 
 app = NeuralNetwork()
-menu.add_command(label="Settings")
+
 Button(canvas, text = 'add', command = app.add_hidden).pack(side = BOTTOM)
 Button(canvas, text = 'add input neuron', command = app.network[0].add_neuron).pack(side = BOTTOM)
 Button(canvas, text = 'add out neuron', command = app.network[1].add_neuron).pack(side = BOTTOM)
