@@ -83,21 +83,20 @@ class NeuralNetwork:
         self.network = [self.input, self.output]
 
     def add_layer(self):
-        self.last_x += 100
-        self.network.append(self.network[self.output_index])
-        # self.network[self.output_index] = Layer(self.last_x, DEFAULT_Y)
-        self.update_output()
-        self.output_index += 1
-        self.network[self.output_index].set_x(self.last_x)
+        # move output layer
+        self.network[self.output_index].move_x() # moves layer
+        self.network.insert(self.output_index, Layer(self.last_x, DEFAULT_Y)) # inserts hidden layer in next position (aka last output index)
+        self.last_x += 100 # updates last_x which denotes where the x location of layer is
+        self.output_index += 1 # updates output_index, which stores the last index of network array
+        self.network[self.output_index].set_x(self.last_x) # updates x location for output layer/fixes "add out neuron"
+
         canvas.update()
-            
-    def update_output(self):
-        self.network[self.output_index].move_x()
 
     def get_network(self):
         return self.network
 
     def get_output_index(self):
+        print(self.output_index)
         return self.output_index
 
 
