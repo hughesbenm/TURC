@@ -1,5 +1,6 @@
 from tkinter import *
 from tkinter.colorchooser import *
+import os.path
 
 # Main window's dimensions
 WIN_WIDTH = 1200
@@ -27,8 +28,9 @@ canvas.place(anchor = CENTER, relheight = .95, relwidth = 0.95, relx = 0.5, rely
 canvas.update()
 
 # Importing images for various buttons and things
-up_arrow = PhotoImage(master = root, file = r"C:\Users\Ben\Desktop\Pics\Up.png")
-down_arrow = PhotoImage(master = root, file = r"C:\Users\Ben\Desktop\Pics\Down.png")
+
+up_arrow = PhotoImage(master = root, file = os.path.join(os.path.dirname(__file__), "Up.png"))
+down_arrow = PhotoImage(master = root, file = os.path.join(os.path.dirname(__file__), "Down.png"))
 
 
 # Simple function to turn (center_x, center_y, radius) into (top_left_x, top_left_y, bottom_right_x, bottom_right_y)
