@@ -16,6 +16,7 @@ root.minsize(WIN_WIDTH, WIN_HEIGHT)
 # Create and add the menu bar at the top of the window
 menu = Menu(root)
 root.config(menu=menu)
+root.resizable(False, False)
 
 # Create and add the canvas that takes up the entire main window
 canvas = Canvas(root, height=CAN_HEIGHT, width=CAN_WIDTH)
@@ -138,12 +139,13 @@ class Layer:
     def popup_layer_settings(self, event = None):
         # Main window for settings
         settings = Toplevel()
+        settings.resizable(False, False)
         settings.focus_force()
-        settings.minsize(500, 500)
+        settings.minsize(width = 250, height = 350)
 
         # Frame to include buttons for settings
-        sett_frame = Frame(settings, width = 200, height = 500)
-        sett_frame.grid_propagate(False)
+        sett_frame = Frame(settings, bg = 'red')
+        # sett_frame.grid_propagate(False)
         sett_frame.pack(side = TOP, fill = X)
 
         # Buttons for settings
