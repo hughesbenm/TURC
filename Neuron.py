@@ -1,4 +1,5 @@
 from tkinter import *
+import tkinter.ttk as ttk
 from tkinter.colorchooser import *
 import os.path
 
@@ -162,13 +163,14 @@ class Layer:
         color_button = Button(sett_frame, bg = self.color, width = 2)
         color_button.config(command = lambda: self.set_desired_color(color_button, sett_frame))
         var = StringVar(sett_frame)
-        function_dropdown = OptionMenu(sett_frame, var, "one", "two", "three")
+        function_dropdown = ttk.Combobox(sett_frame, textvariable = var, width = 10)
+        function_dropdown.bind("Hello")
 
         # Arranges all buttons
         num_neurons_label.grid(row = 0, column = 0, columnspan = 5, sticky = W)
         add_neuron.grid(row = 1, column = 0, padx = 7)
         subtract_neuron.grid(row = 2, column = 0, padx = 7)
-        num_neurons_entry.grid(row = 1, column = 2, rowspan = 2, columnspan = 4)
+        num_neurons_entry.grid(row = 1, column = 1, rowspan = 2, columnspan = 4)
         sett_frame.grid_rowconfigure(3, minsize = 20)
         color_label.grid(row = 4, column = 0, columnspan = 4, sticky = W)
         sett_frame.grid_rowconfigure(5)
