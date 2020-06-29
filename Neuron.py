@@ -30,8 +30,8 @@ canvas.update()
 
 # Importing images for various buttons and things
 
-up_arrow = PhotoImage(master = root, file = os.path.join(os.path.dirname(__file__), "Up.png"))
-down_arrow = PhotoImage(master = root, file = os.path.join(os.path.dirname(__file__), "Down.png"))
+up_arrow = PhotoImage(master = root, file = os.path.join(os.path.dirname(__file__), "Images/Up.png"))
+down_arrow = PhotoImage(master = root, file = os.path.join(os.path.dirname(__file__), "Images/Down.png"))
 
 
 # Simple function to turn (center_x, center_y, radius) into (top_left_x, top_left_y, bottom_right_x, bottom_right_y)
