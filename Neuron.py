@@ -9,7 +9,7 @@ DEFAULT_Y = 50
 root = Tk()
 root.minsize(WIN_WIDTH, WIN_HEIGHT)
 menu = Menu(root)
-canvas = Canvas(root, height=500, width=500)
+canvas = Canvas(root, height=600, width=1200)
 
 canvas.pack()
 
@@ -64,29 +64,45 @@ class Layer:
     def set_x(self, x):
         self.CONST_X = x
 
-    def move_x(self):
+    def move_forward_x(self):
         for i in self.layer:
-            i.move_x(100)
-
+            i.move_x(50)
+    
+    def move_backward_x(self):
+        for i in self.layer:
+            i.move_x(-50)
 
 
 class NeuralNetwork:
     def __init__(self):
-        self.input = Layer(50, DEFAULT_Y)
+        self.input = Layer((WIN_WIDTH/2) - 50, DEFAULT_Y)
         self.input_index = 0 #not necessary
 
-        self.output = Layer(250, DEFAULT_Y)
+        self.output = Layer((WIN_WIDTH/2) + 50, DEFAULT_Y)
         self.output_index = 1
 
-        self.last_x = 250
+        self.last_x = self.output.get_x()
+        self.hidden_x = self.input.get_x() # initial value of 550
         
         self.network = [self.input, self.output]
 
     def add_layer(self):
+        # adjust layers before output
+        for i in self.network:
+            if (i == self.network[self.output_index]):
+                break
+            i.move_backward_x()
+            
+
         # move output layer
-        self.network[self.output_index].move_x() # moves layer
-        self.network.insert(self.output_index, Layer(self.last_x, DEFAULT_Y)) # inserts hidden layer in next position (aka last output index)
-        self.last_x += 100 # updates last_x which denotes where the x location of layer is
+        self.network[self.output_index].move_forward_x() # moves layer
+
+        # insert new layer
+        self.hidden_x += 50
+        self.network.insert(self.output_index, Layer(self.hidden_x, DEFAULT_Y)) # inserts hidden layer in next position (aka last output index)
+
+        # adjust variables
+        self.last_x += 50 # updates last_x which denotes where the x location of layer is
         self.output_index += 1 # updates output_index, which stores the last index of network array
         self.network[self.output_index].set_x(self.last_x) # updates x location for output layer/fixes "add out neuron"
 
