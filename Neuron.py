@@ -74,6 +74,11 @@ class Layer:
         self.function = 'relu'
         self.desired_function = 'relu'
         canvas.tag_bind(self.layer[0].get_tag(), '<Button-3>', self.popup_layer_settings)
+        self.settings = Toplevel()
+        self.settings.resizable(False, False)
+        self.settings.minsize(width = 250, height = 350)
+        self.settings.withdraw()
+        self.sett_frame = Frame(self.settings)
 
     # Runs when "Apply" is clicked in a layer's settings
     # Changes the layer based on changes made in the settings menu
@@ -148,69 +153,66 @@ class Layer:
     # Code for the layer settings menu that appears on right clicking a neuron
     def popup_layer_settings(self, event = None):
         # Main window for settings
-        settings = Toplevel()
-        settings.resizable(False, False)
-        settings.focus_force()
-        settings.minsize(width = 250, height = 350)
-
+        self.settings.deiconify()
+        self.settings.focus_force()
         # Frame to include buttons for settings
-        sett_frame = Frame(settings)
+
         # sett_frame.grid_propagate(False)
-        sett_frame.pack(side = TOP, fill = X)
+        self.sett_frame.pack(side = TOP, fill = X)
 
         # Buttons for settings
-        layer_type_label = Label(sett_frame, text = 'Layer Type')
-        layer_type_var = StringVar(sett_frame)
+        layer_type_label = Label(self.sett_frame, text = 'Layer Type')
+        # layer_type_label.config(parent = sett_frame)
+        layer_type_var = StringVar(self.sett_frame)
         layer_type_var.set(self.layer_type)
-        layer_dropdown = ttk.Combobox(sett_frame, textvariable = layer_type_var, width = 10, values = LAYERS,
+        layer_dropdown = ttk.Combobox(self.sett_frame, textvariable = layer_type_var, width = 10, values = LAYERS,
                                       state = 'readonly')
-        num_neurons_label = Label(sett_frame, text = 'Number of Neurons')
-        num_neurons_var = IntVar(settings, self.desired_neurons)
-        add_neuron = Button(sett_frame, image = up_arrow, height = 10,
+        num_neurons_label = Label(self.sett_frame, text = 'Number of Neurons')
+        num_neurons_var = IntVar(self.settings, self.desired_neurons)
+        add_neuron = Button(self.sett_frame, image = up_arrow, height = 10,
                             command = lambda: self.add_desired(num_neurons_var))
-        subtract_neuron = Button(sett_frame, image = down_arrow, height = 10,
+        subtract_neuron = Button(self.sett_frame, image = down_arrow, height = 10,
                                  command = lambda: self.subtract_desired(num_neurons_var))
-        num_neurons_entry = Entry(sett_frame, textvariable = num_neurons_var, width = 18)
-        color_label = Label(sett_frame, text = 'Layer Color')
-        color_button = Button(sett_frame, bg = self.color, width = 2,
-                              command = lambda: self.set_desired_color(color_button, sett_frame))
-        function_var = StringVar(sett_frame)
+        num_neurons_entry = Entry(self.sett_frame, textvariable = num_neurons_var, width = 18)
+        color_label = Label(self.sett_frame, text = 'Layer Color')
+        color_button = Button(self.sett_frame, bg = self.color, width = 2,
+                              command = lambda: self.set_desired_color(color_button, self.sett_frame))
+        function_var = StringVar(self.sett_frame)
         function_var.set(self.function)
-        function_dropdown = ttk.Combobox(sett_frame, textvariable = function_var, width = 10, values = FUNCTIONS,
+        function_dropdown = ttk.Combobox(self.sett_frame, textvariable = function_var, width = 10, values = FUNCTIONS,
                                          state = 'readonly')
-        def printLOL(event = None):
-            print('LOL')
-        layer_dropdown.bind('<<ComboboxSelected>>', printLOL)
+
+        # layer_dropdown.bind('<<ComboboxSelected>>', printLOL)
         # Arranges all buttons
         layer_type_label.grid(row = 0, column = 0, columnspan = 5, sticky = W)
         layer_dropdown.grid(row = 1, column = 0, columnspan = 2)
-        sett_frame.rowconfigure(3, minsize = 20)
+        self.sett_frame.rowconfigure(3, minsize = 20)
         num_neurons_label.grid(row = 4, column = 0, columnspan = 5, sticky = W)
         num_neurons_entry.grid(row = 5, column = 1, rowspan = 2, columnspan = 4)
         add_neuron.grid(row = 5, column = 0, padx = 7)
         subtract_neuron.grid(row = 6, column = 0, padx = 7)
-        sett_frame.grid_rowconfigure(7, minsize = 20)
+        self.sett_frame.grid_rowconfigure(7, minsize = 20)
         color_label.grid(row = 8, column = 0, columnspan = 4, sticky = W)
         color_button.grid(row = 9, column = 0, padx = 5)
-        sett_frame.grid_rowconfigure(10, minsize = 20)
+        self.sett_frame.grid_rowconfigure(10, minsize = 20)
         function_dropdown.grid(row = 11, column = 0, columnspan = 2)
 
         # Frame for Apply and Close
-        buttons = Frame(settings, width=200, height=500)
+        buttons = Frame(self.settings, width=200, height=500)
         buttons.pack(side=BOTTOM, fill = BOTH)
         buttons.grid_columnconfigure(0, weight = 1)
 
         # Apply and Close Buttons
         settings_apply = Button(buttons, text = 'Apply',
-                                command = lambda: self.apply_layer(settings, num_neurons_var, function_var,
+                                command = lambda: self.apply_layer(self.settings, num_neurons_var, function_var,
                                                                    layer_type_var))
-        settings_close = Button(buttons, text='Close', command = lambda: self.close_layer(settings, num_neurons_var))
+        settings_close = Button(buttons, text='Close', command = lambda: self.close_layer(self.settings, num_neurons_var))
 
         # Place Apply and Close
         settings_apply.grid(column = 1, row = 0, padx = 10, pady = 5)
         settings_close.grid(column = 2, row = 0, padx = 10, pady = 5)
 
-        settings.mainloop()
+        self.settings.mainloop()
 
 
 # The entire network itself, a collection of layers
