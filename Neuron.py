@@ -34,6 +34,7 @@ down_arrow = PhotoImage(master = root, file = os.path.join(os.path.dirname(__fil
 
 # Constants for the keras side of things
 FUNCTIONS = ('relu', 'sigmoid', 'softmax', 'softplus', 'softsign', 'tanh', 'selu', 'elu', 'exponential')
+LAYERS = ('Dense', 'Dropout')
 
 # Simple function to turn (center_x, center_y, radius) into (top_left_x, top_left_y, bottom_right_x, bottom_right_y)
 def coords(x, y, radius):
@@ -69,13 +70,15 @@ class Layer:
         self.num_neurons = 1
         self.desired_neurons = 1
         self.desired_color = self.color
+        self.layer_type = 'Dense'
         self.function = 'relu'
         self.desired_function = 'relu'
         canvas.tag_bind(self.layer[0].get_tag(), '<Button-3>', self.popup_layer_settings)
 
     # Runs when "Apply" is clicked in a layer's settings
     # Changes the layer based on changes made in the settings menu
-    def apply_layer(self, settings, num_neurons_var, function_var):
+    def apply_layer(self, settings, num_neurons_var, function_var, layer_type_var):
+        self.layer_type = layer_type_var.get()
         self.function = function_var.get()
         self.desired_neurons = num_neurons_var.get()
         self.color = self.desired_color
@@ -156,6 +159,11 @@ class Layer:
         sett_frame.pack(side = TOP, fill = X)
 
         # Buttons for settings
+        layer_type_label = Label(sett_frame, text = 'Layer Type')
+        layer_type_var = StringVar(sett_frame)
+        layer_type_var.set(self.layer_type)
+        layer_dropdown = ttk.Combobox(sett_frame, textvariable = layer_type_var, width = 10, values = LAYERS,
+                                      state = 'readonly')
         num_neurons_label = Label(sett_frame, text = 'Number of Neurons')
         num_neurons_var = IntVar(settings, self.desired_neurons)
         add_neuron = Button(sett_frame, image = up_arrow, height = 10,
@@ -170,18 +178,22 @@ class Layer:
         function_var.set(self.function)
         function_dropdown = ttk.Combobox(sett_frame, textvariable = function_var, width = 10, values = FUNCTIONS,
                                          state = 'readonly')
-
+        def printLOL(event = None):
+            print('LOL')
+        layer_dropdown.bind('<<ComboboxSelected>>', printLOL)
         # Arranges all buttons
-        num_neurons_label.grid(row = 0, column = 0, columnspan = 5, sticky = W)
-        add_neuron.grid(row = 1, column = 0, padx = 7)
-        subtract_neuron.grid(row = 2, column = 0, padx = 7)
-        num_neurons_entry.grid(row = 1, column = 1, rowspan = 2, columnspan = 4)
-        sett_frame.grid_rowconfigure(3, minsize = 20)
-        color_label.grid(row = 4, column = 0, columnspan = 4, sticky = W)
-        sett_frame.grid_rowconfigure(5)
-        color_button.grid(row = 5, column = 0, padx = 5)
-        sett_frame.grid_rowconfigure(6, minsize = 20)
-        function_dropdown.grid(row = 7, column = 0)
+        layer_type_label.grid(row = 0, column = 0, columnspan = 5, sticky = W)
+        layer_dropdown.grid(row = 1, column = 0, columnspan = 2)
+        sett_frame.rowconfigure(3, minsize = 20)
+        num_neurons_label.grid(row = 4, column = 0, columnspan = 5, sticky = W)
+        num_neurons_entry.grid(row = 5, column = 1, rowspan = 2, columnspan = 4)
+        add_neuron.grid(row = 5, column = 0, padx = 7)
+        subtract_neuron.grid(row = 6, column = 0, padx = 7)
+        sett_frame.grid_rowconfigure(7, minsize = 20)
+        color_label.grid(row = 8, column = 0, columnspan = 4, sticky = W)
+        color_button.grid(row = 9, column = 0, padx = 5)
+        sett_frame.grid_rowconfigure(10, minsize = 20)
+        function_dropdown.grid(row = 11, column = 0, columnspan = 2)
 
         # Frame for Apply and Close
         buttons = Frame(settings, width=200, height=500)
@@ -190,7 +202,8 @@ class Layer:
 
         # Apply and Close Buttons
         settings_apply = Button(buttons, text = 'Apply',
-                                command = lambda: self.apply_layer(settings, num_neurons_var, function_var))
+                                command = lambda: self.apply_layer(settings, num_neurons_var, function_var,
+                                                                   layer_type_var))
         settings_close = Button(buttons, text='Close', command = lambda: self.close_layer(settings, num_neurons_var))
 
         # Place Apply and Close
