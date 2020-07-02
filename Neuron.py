@@ -81,6 +81,8 @@ class Layer:
         self.settings.minsize(width = 250, height = 350)
         self.settings.withdraw()
         self.sett_frame = Frame(self.settings)
+        self.sett_frame.pack(expand = True, fill = BOTH)
+        self.settings.bind('<<ComboboxSelected>>', self.arrange_settings)
         self.layer_type_label = Label(self.sett_frame, text = 'Layer Type')
         # Buttons for settings
         self.layer_type_label = Label(self.sett_frame, text = 'Layer Type')
@@ -92,13 +94,15 @@ class Layer:
         self.num_neurons_var = IntVar(self.settings, self.desired_neurons)
         self.add_neuron_arrow = Button(self.sett_frame, image = up_arrow, height = 10, command = self.add_desired)
         self.subtract_neuron = Button(self.sett_frame, image = down_arrow, height = 10, command = self.subtract_desired)
-        self.num_neurons_entry = Entry(self.sett_frame, textvariable = self.num_neurons_var, width = 18)
+        self.num_neurons_entry = Entry(self.sett_frame, textvariable = self.num_neurons_var, width = 9)
         self.color_label = Label(self.sett_frame, text = 'Layer Color')
         self.color_button = Button(self.sett_frame, bg = self.color, width = 2, command = self.set_desired_color)
         self.function_var = StringVar(self.sett_frame)
         self.function_var.set(self.function)
         self.function_dropdown = ttk.Combobox(self.sett_frame, textvariable = self.function_var, width = 10,
                                               values = FUNCTIONS, state = 'readonly')
+        self.settings_apply = Button(self.sett_frame, text = 'Apply', command = self.apply_layer)
+        self.settings_close = Button(self.sett_frame, text = 'Close', command = self.close_layer)
 
     # Runs when "Apply" is clicked in a layer's settings
     # Changes the layer based on changes made in the settings menu
@@ -170,53 +174,53 @@ class Layer:
             self.desired_neurons = 1
         self.num_neurons_var.set(self.desired_neurons)
 
-    def arrange_settings(self):
-        self.sett_frame.grid_forget()
+    def arrange_settings(self, event = None):
+        self.layer_type = self.layer_type_var.get()
+        for widget in self.sett_frame.winfo_children():
+            widget.grid_forget()
+
+        self.sett_frame.update()
 
         if self.layer_type == 'Dense':
-            pass
-        elif self.layer_type == "Dropout":
-            pass
+            self.layer_type_label.grid(row = 0, column = 0, sticky = W)
+            self.layer_dropdown.grid(row = 1, column = 0, padx = 7, sticky = W)
+
+            self.sett_frame.rowconfigure(3, minsize = 20)
+
+            self.num_neurons_label.grid(row = 4, column = 0, sticky = W)
+            self.num_neurons_entry.grid(row = 5, column = 0, rowspan = 2, padx = 32, sticky = W)
+            self.add_neuron_arrow.grid(row = 5, column = 0, padx = 7, sticky = W)
+            self.subtract_neuron.grid(row = 6, column = 0, padx = 7, sticky = W)
+
+            self.sett_frame.grid_rowconfigure(7, minsize = 20)
+
+            self.color_label.grid(row = 8, column = 0, sticky = W)
+            self.color_button.grid(row = 9, column = 0, padx = 7, sticky = W)
+
+            self.sett_frame.grid_rowconfigure(10, minsize = 20)
+
+            self.function_dropdown.grid(row = 11, column = 0, padx = 7, sticky = W)
+
+            self.sett_frame.rowconfigure(98, weight = 2)
+            self.sett_frame.columnconfigure(98, weight = 2)
+            self.settings_apply.grid(column = 99, row = 100, padx = 10, pady = 5)
+            self.settings_close.grid(column = 100, row = 100, padx = 10, pady = 5)
+
+        elif self.layer_type == 'Dropout':
+            self.layer_type_label.grid(row = 0, column = 0, sticky = W)
+            self.layer_dropdown.grid(row = 1, column = 0, padx = 7, sticky = W)
+
+            self.sett_frame.rowconfigure(98, weight = 2)
+            self.sett_frame.columnconfigure(98, weight = 2)
+            self.settings_apply.grid(column = 99, row = 100, padx = 10, pady = 5)
+            self.settings_close.grid(column = 100, row = 100, padx = 10, pady = 5)
 
     # Code for the layer settings menu that appears on right clicking a neuron
     def open_settings(self, event = None):
-        # Main window for settings
+        self.arrange_settings()
         self.settings.deiconify()
         self.settings.focus_force()
-
         self.num_neurons_var.set(self.desired_neurons)
-
-        # sett_frame.grid_propagate(False)
-        self.sett_frame.pack(side = TOP, fill = X)
-
-        # layer_dropdown.bind('<<ComboboxSelected>>', printLOL)
-        # Arranges all buttons
-        self.layer_type_label.grid(row = 0, column = 0, columnspan = 5, sticky = W)
-        self.layer_dropdown.grid(row = 1, column = 0, columnspan = 2)
-        self.sett_frame.rowconfigure(3, minsize = 20)
-        self.num_neurons_label.grid(row = 4, column = 0, columnspan = 5, sticky = W)
-        self.num_neurons_entry.grid(row = 5, column = 1, rowspan = 2, columnspan = 4)
-        self.add_neuron_arrow.grid(row = 5, column = 0, padx = 7)
-        self.subtract_neuron.grid(row = 6, column = 0, padx = 7)
-        self.sett_frame.grid_rowconfigure(7, minsize = 20)
-        self.color_label.grid(row = 8, column = 0, columnspan = 4, sticky = W)
-        self.color_button.grid(row = 9, column = 0, padx = 5)
-        self.sett_frame.grid_rowconfigure(10, minsize = 20)
-        self.function_dropdown.grid(row = 11, column = 0, columnspan = 2)
-
-        # Frame for Apply and Close
-        buttons = Frame(self.settings, width=200, height=500)
-        buttons.pack(side=BOTTOM, fill = BOTH)
-        buttons.grid_columnconfigure(0, weight = 1)
-
-        # Apply and Close Buttons
-        settings_apply = Button(buttons, text = 'Apply', command = self.apply_layer)
-        settings_close = Button(buttons, text='Close', command = self.close_layer)
-
-        # Place Apply and Close
-        settings_apply.grid(column = 1, row = 0, padx = 10, pady = 5)
-        settings_close.grid(column = 2, row = 0, padx = 10, pady = 5)
-
         self.settings.mainloop()
 
 
