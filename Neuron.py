@@ -79,6 +79,7 @@ class Layer:
         self.settings.protocol('WM_DELETE_WINDOW', self.close_layer)
         self.settings.resizable(False, False)
         self.settings.minsize(width = 250, height = 350)
+        self.settings.maxsize(width = 250, height = 350)
         self.settings.withdraw()
         self.sett_frame = Frame(self.settings)
         self.sett_frame.pack(expand = True, fill = BOTH)
@@ -182,10 +183,13 @@ class Layer:
         self.sett_frame.update()
 
         if self.layer_type == 'Dense':
+            self.sett_frame.columnconfigure(1, weight = 1)
             self.layer_type_label.grid(row = 0, column = 0, sticky = W)
             self.layer_dropdown.grid(row = 1, column = 0, padx = 7, sticky = W)
 
             self.sett_frame.rowconfigure(3, minsize = 20)
+            ttk.Separator(self.sett_frame, orient = HORIZONTAL).grid(row = 3, column = 0, padx = 7, columnspan = 2,
+                                                                     sticky = EW)
 
             self.num_neurons_label.grid(row = 4, column = 0, sticky = W)
             self.num_neurons_entry.grid(row = 5, column = 0, rowspan = 2, padx = 32, sticky = W)
@@ -194,17 +198,16 @@ class Layer:
 
             self.sett_frame.grid_rowconfigure(7, minsize = 20)
 
+            self.function_dropdown.grid(row = 5, column = 1, rowspan = 2, padx = 7, sticky = W)
+
             self.color_label.grid(row = 8, column = 0, sticky = W)
             self.color_button.grid(row = 9, column = 0, padx = 7, sticky = W)
 
-            self.sett_frame.grid_rowconfigure(10, minsize = 20)
-
-            self.function_dropdown.grid(row = 11, column = 0, padx = 7, sticky = W)
-
-            self.sett_frame.rowconfigure(98, weight = 2)
-            self.sett_frame.columnconfigure(98, weight = 2)
-            self.settings_apply.grid(column = 99, row = 100, padx = 10, pady = 5)
-            self.settings_close.grid(column = 100, row = 100, padx = 10, pady = 5)
+            self.sett_frame.rowconfigure(100, weight = 1)
+            ttk.Separator(self.sett_frame, orient = HORIZONTAL).grid(row = 101, column = 0, padx = 7, columnspan = 2,
+                                                                         sticky = EW)
+            self.settings_apply.grid(column = 1, row = 102, padx = 15, pady = 7, sticky = W)
+            self.settings_close.grid(column = 1, row = 102, padx = 15, pady = 7, sticky = E)
 
         elif self.layer_type == 'Dropout':
             self.layer_type_label.grid(row = 0, column = 0, sticky = W)
