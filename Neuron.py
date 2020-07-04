@@ -33,8 +33,10 @@ up_arrow = PhotoImage(master = root, file = os.path.join(os.path.dirname(__file_
 down_arrow = PhotoImage(master = root, file = os.path.join(os.path.dirname(__file__), "Images/Down.png"))
 
 # Constants for the keras side of things
-FUNCTIONS = ('relu', 'sigmoid', 'softmax', 'softplus', 'softsign', 'tanh', 'selu', 'elu', 'exponential')
+FUNCTIONS = ('linear', 'relu', 'sigmoid', 'softmax', 'softplus', 'softsign', 'tanh', 'selu', 'elu', 'exponential')
 LAYERS = ('Dense', 'Dropout')
+INITIALIZERS = ('random_normal', 'random_uniform', 'truncated_normal', 'zeros', 'ones', 'glorot_normal',
+                'glorot_uniform', 'identity', 'orthogonal', 'constant', 'variance_Scaling')
 
 
 # Simple function to turn (center_x, center_y, radius) into (top_left_x, top_left_y, bottom_right_x, bottom_right_y)
@@ -71,9 +73,10 @@ class Layer:
         self.num_neurons = 1
         self.desired_neurons = 1
         self.desired_color = self.color
-        self.layer_type = 'Dense'
-        self.function = 'relu'
-        self.desired_function = 'relu'
+        self.layer_type = LAYERS[0]     # Dense
+        self.function = FUNCTIONS[0]    # Linear
+        self.bias = INITIALIZERS[0]     # Zeros
+        self.desired_function = self.function
         canvas.tag_bind(self.layer[0].get_tag(), '<Button-3>', self.open_settings)
         self.settings = Toplevel()
         self.settings.protocol('WM_DELETE_WINDOW', self.close_layer)
@@ -83,7 +86,6 @@ class Layer:
         self.settings.withdraw()
         self.sett_frame = Frame(self.settings)
         self.sett_frame.pack(expand = True, fill = BOTH)
-        self.settings.bind('<<ComboboxSelected>>', self.arrange_settings)
         self.layer_type_label = Label(self.sett_frame, text = 'Layer Type')
         # Buttons for settings
         self.layer_type_label = Label(self.sett_frame, text = 'Layer Type')
@@ -91,6 +93,7 @@ class Layer:
         self.layer_type_var.set(self.layer_type)
         self.layer_dropdown = ttk.Combobox(self.sett_frame, textvariable = self.layer_type_var, width = 10,
                                            values = LAYERS, state = 'readonly')
+        self.layer_dropdown.bind('<<ComboboxSelected>>', self.arrange_settings)
         self.num_neurons_label = Label(self.sett_frame, text = 'Number of Neurons')
         self.num_neurons_var = IntVar(self.settings, self.desired_neurons)
         self.add_neuron_arrow = Button(self.sett_frame, image = up_arrow, height = 10, command = self.add_desired)
@@ -100,8 +103,20 @@ class Layer:
         self.color_button = Button(self.sett_frame, bg = self.color, width = 2, command = self.set_desired_color)
         self.function_var = StringVar(self.sett_frame)
         self.function_var.set(self.function)
+        self.function_label = Label(self.sett_frame, text = 'Activation Function')
         self.function_dropdown = ttk.Combobox(self.sett_frame, textvariable = self.function_var, width = 10,
                                               values = FUNCTIONS, state = 'readonly')
+        self.bias_var = StringVar(self.sett_frame)
+        self.bias_var.set(self.bias)
+        self.use_bias_label = Label(self.sett_frame, text = 'Use Bias')
+        self.bias_check_var = BooleanVar(self.sett_frame)
+        self.bias_check_var.set(True)
+        self.bias_check = Checkbutton(self.sett_frame, variable = self.bias_check_var,
+                                      command = self.switch_bias_dropdown)
+        self.bias_label = Label(self.sett_frame, text = 'Bias Initializer')
+        self.bias_dropdown = ttk.Combobox(self.sett_frame, textvariable = self.bias_var, width = 10, values = INITIALIZERS,
+                                      state = 'readonly')
+        self.bias_dropdown_flag = True
         self.settings_apply = Button(self.sett_frame, text = 'Apply', command = self.apply_layer)
         self.settings_close = Button(self.sett_frame, text = 'Close', command = self.close_layer)
 
@@ -110,6 +125,7 @@ class Layer:
     def apply_layer(self):
         self.layer_type = self.layer_type_var.get()
         self.function = self.function_var.get()
+        self.bias = self.bias_var.get()
         self.desired_neurons = self.num_neurons_var.get()
         self.color = self.desired_color
         if self.desired_neurons > self.num_neurons:
@@ -141,6 +157,13 @@ class Layer:
     def set_color(self):
         for i in self.layer:
             i.set_background(self.color)
+
+    def switch_bias_dropdown(self):
+        if self.bias_dropdown_flag:
+            self.bias_dropdown.config(state = 'disable')
+        else:
+            self.bias_dropdown.config(state = 'enable')
+        self.bias_dropdown_flag = not self.bias_dropdown_flag
 
     # Increase the number of neurons in the layer by one, bind it to settings on right click, reorient the layer
     def add_neuron(self):
@@ -196,16 +219,23 @@ class Layer:
             self.add_neuron_arrow.grid(row = 5, column = 0, padx = 7, sticky = W)
             self.subtract_neuron.grid(row = 6, column = 0, padx = 7, sticky = W)
 
+            self.function_label.grid(row = 4, column = 1, sticky = W)
+            self.function_dropdown.grid(row = 5, column = 1, padx = 7, sticky = W)
+
             self.sett_frame.grid_rowconfigure(7, minsize = 20)
 
-            self.function_dropdown.grid(row = 5, column = 1, rowspan = 2, padx = 7, sticky = W)
+            self.use_bias_label.grid(row = 8, column = 0, sticky = W)
+            self.bias_check.grid(row = 9, column = 0, padx = 7, sticky = W)
 
-            self.color_label.grid(row = 8, column = 0, sticky = W)
-            self.color_button.grid(row = 9, column = 0, padx = 7, sticky = W)
+            self.bias_label.grid(row = 8, column = 1, sticky = W)
+            self.bias_dropdown.grid(row = 9, column = 1, padx = 7, sticky = W)
+
+            self.color_label.grid(row = 10, column = 0, sticky = W)
+            self.color_button.grid(row = 11, column = 0, padx = 7, sticky = W)
 
             self.sett_frame.rowconfigure(100, weight = 1)
             ttk.Separator(self.sett_frame, orient = HORIZONTAL).grid(row = 101, column = 0, padx = 7, columnspan = 2,
-                                                                         sticky = EW)
+                                                                     sticky = EW)
             self.settings_apply.grid(column = 1, row = 102, padx = 15, pady = 7, sticky = W)
             self.settings_close.grid(column = 1, row = 102, padx = 15, pady = 7, sticky = E)
 
