@@ -81,8 +81,8 @@ class Layer:
         self.settings = Toplevel()
         self.settings.protocol('WM_DELETE_WINDOW', self.close_layer)
         self.settings.resizable(False, False)
-        self.settings.minsize(width = 250, height = 350)
-        self.settings.maxsize(width = 250, height = 350)
+        self.settings.minsize(width = 300, height = 350)
+        self.settings.maxsize(width = 300, height = 350)
         self.settings.withdraw()
         self.sett_frame = Frame(self.settings)
         self.sett_frame.pack(expand = True, fill = BOTH)
@@ -114,11 +114,16 @@ class Layer:
         self.bias_check = Checkbutton(self.sett_frame, variable = self.bias_check_var,
                                       command = self.switch_bias_dropdown)
         self.bias_label = Label(self.sett_frame, text = 'Bias Initializer')
-        self.bias_dropdown = ttk.Combobox(self.sett_frame, textvariable = self.bias_var, width = 10, values = INITIALIZERS,
-                                      state = 'readonly')
+        self.bias_dropdown = ttk.Combobox(self.sett_frame, textvariable = self.bias_var, width = 18,
+                                          values = INITIALIZERS, state = 'readonly')
         self.bias_dropdown_flag = True
-        self.settings_apply = Button(self.sett_frame, text = 'Apply', command = self.apply_layer)
-        self.settings_close = Button(self.sett_frame, text = 'Close', command = self.close_layer)
+
+        self.apply_close_frame = Frame(self.sett_frame)
+        self.settings_apply = Button(self.apply_close_frame, text = 'Apply', command = self.apply_layer)
+        self.settings_close = Button(self.apply_close_frame, text = 'Close', command = self.close_layer)
+        self.settings_apply.grid(column = 1, row = 0, padx = 7, pady = 7, sticky = W)
+        self.settings_close.grid(column = 2, row = 0, padx = 7, pady = 7, sticky = W)
+        self.apply_close_frame.columnconfigure(0, weight = 1)
 
     # Runs when "Apply" is clicked in a layer's settings
     # Changes the layer based on changes made in the settings menu
@@ -205,15 +210,19 @@ class Layer:
 
         self.sett_frame.update()
 
+        self.sett_frame.columnconfigure(0, weight = 1)
+        self.sett_frame.columnconfigure(1, weight = 1)
+        self.layer_type_label.grid(row = 0, column = 0, sticky = W)
+        self.layer_dropdown.grid(row = 1, column = 0, padx = 7, sticky = W)
+        self.sett_frame.rowconfigure(3, minsize = 20)
+        ttk.Separator(self.sett_frame, orient = HORIZONTAL).grid(row = 3, column = 0, padx = 7, columnspan = 2,
+                                                                 sticky = EW)
+        self.sett_frame.rowconfigure(100, weight = 1)
+        ttk.Separator(self.sett_frame, orient = HORIZONTAL).grid(row = 101, column = 0, padx = 7, columnspan = 2,
+                                                                 sticky = EW)
+        self.apply_close_frame.grid(row = 102, column = 1, padx = 7, sticky = E)
+
         if self.layer_type == 'Dense':
-            self.sett_frame.columnconfigure(1, weight = 1)
-            self.layer_type_label.grid(row = 0, column = 0, sticky = W)
-            self.layer_dropdown.grid(row = 1, column = 0, padx = 7, sticky = W)
-
-            self.sett_frame.rowconfigure(3, minsize = 20)
-            ttk.Separator(self.sett_frame, orient = HORIZONTAL).grid(row = 3, column = 0, padx = 7, columnspan = 2,
-                                                                     sticky = EW)
-
             self.num_neurons_label.grid(row = 4, column = 0, sticky = W)
             self.num_neurons_entry.grid(row = 5, column = 0, rowspan = 2, padx = 32, sticky = W)
             self.add_neuron_arrow.grid(row = 5, column = 0, padx = 7, sticky = W)
@@ -233,20 +242,8 @@ class Layer:
             self.color_label.grid(row = 10, column = 0, sticky = W)
             self.color_button.grid(row = 11, column = 0, padx = 7, sticky = W)
 
-            self.sett_frame.rowconfigure(100, weight = 1)
-            ttk.Separator(self.sett_frame, orient = HORIZONTAL).grid(row = 101, column = 0, padx = 7, columnspan = 2,
-                                                                     sticky = EW)
-            self.settings_apply.grid(column = 1, row = 102, padx = 15, pady = 7, sticky = W)
-            self.settings_close.grid(column = 1, row = 102, padx = 15, pady = 7, sticky = E)
-
         elif self.layer_type == 'Dropout':
-            self.layer_type_label.grid(row = 0, column = 0, sticky = W)
-            self.layer_dropdown.grid(row = 1, column = 0, padx = 7, sticky = W)
-
-            self.sett_frame.rowconfigure(98, weight = 2)
-            self.sett_frame.columnconfigure(98, weight = 2)
-            self.settings_apply.grid(column = 99, row = 100, padx = 10, pady = 5)
-            self.settings_close.grid(column = 100, row = 100, padx = 10, pady = 5)
+            pass
 
     # Code for the layer settings menu that appears on right clicking a neuron
     def open_settings(self, event = None):
