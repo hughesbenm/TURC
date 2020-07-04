@@ -99,8 +99,12 @@ class Layer:
         self.add_neuron_arrow = Button(self.sett_frame, image = up_arrow, height = 10, command = self.add_desired)
         self.subtract_neuron = Button(self.sett_frame, image = down_arrow, height = 10, command = self.subtract_desired)
         self.num_neurons_entry = Entry(self.sett_frame, textvariable = self.num_neurons_var, width = 9)
+
+        self.single_pixel = PhotoImage(width = 1, height = 1)
         self.color_label = Label(self.sett_frame, text = 'Layer Color')
-        self.color_button = Button(self.sett_frame, bg = self.color, width = 2, command = self.set_desired_color)
+        self.color_button = Button(self.sett_frame, bg = self.color, width = 15, height = 15,
+                                   command = self.set_desired_color, image = self.single_pixel)
+
         self.function_var = StringVar(self.sett_frame)
         self.function_var.set(self.function)
         self.function_label = Label(self.sett_frame, text = 'Activation Function')
@@ -208,12 +212,12 @@ class Layer:
         for widget in self.sett_frame.winfo_children():
             widget.grid_forget()
 
-        self.sett_frame.update()
-
         self.sett_frame.columnconfigure(0, weight = 1)
         self.sett_frame.columnconfigure(1, weight = 1)
         self.layer_type_label.grid(row = 0, column = 0, sticky = W)
         self.layer_dropdown.grid(row = 1, column = 0, padx = 7, sticky = W)
+        self.color_label.grid(row = 0, column = 1, sticky = W)
+        self.color_button.grid(row = 1, column = 1, padx = 5, sticky = W)
         self.sett_frame.rowconfigure(3, minsize = 20)
         ttk.Separator(self.sett_frame, orient = HORIZONTAL).grid(row = 3, column = 0, padx = 7, columnspan = 2,
                                                                  sticky = EW)
@@ -238,9 +242,6 @@ class Layer:
 
             self.bias_label.grid(row = 8, column = 1, sticky = W)
             self.bias_dropdown.grid(row = 9, column = 1, padx = 7, sticky = W)
-
-            self.color_label.grid(row = 10, column = 0, sticky = W)
-            self.color_button.grid(row = 11, column = 0, padx = 7, sticky = W)
 
         elif self.layer_type == 'Dropout':
             pass
