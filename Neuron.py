@@ -67,18 +67,25 @@ class Layer:
     def move_forward_x(self):
         for i in self.layer:
             i.move_x(50)
+            self.CONST_X += 50
     
     def move_backward_x(self):
         for i in self.layer:
             i.move_x(-50)
+            self.CONST_X -= 50
+    
+    def move_x_num(self, x):
+        for i in self.layer:
+            i.move_x(x)
+            self.CONST_X += x
 
 
 class NeuralNetwork:
     def __init__(self):
-        self.input = Layer((WIN_WIDTH/2) - 50, DEFAULT_Y)
+        self.input = Layer((WIN_WIDTH/2) - 75, DEFAULT_Y)
         self.input_index = 0 #not necessary
 
-        self.output = Layer((WIN_WIDTH/2) + 50, DEFAULT_Y)
+        self.output = Layer((WIN_WIDTH/2) + 25, DEFAULT_Y)
         self.output_index = 1
 
         self.last_x = self.output.get_x()
@@ -87,24 +94,33 @@ class NeuralNetwork:
         self.network = [self.input, self.output]
 
     def add_layer(self):
-        # adjust layers before output
-        for i in self.network:
-            if (i == self.network[self.output_index]):
-                break
-            i.move_backward_x()
-            
+        if ((self.output_index + 1) < 12):
+            # adjust layers before output
+            for i in self.network:
+                if (i == self.network[self.output_index]):
+                    break
+                i.move_backward_x()
+                
 
-        # move output layer
-        self.network[self.output_index].move_forward_x() # moves layer
+            # move output layer
+            self.network[self.output_index].move_forward_x() # moves layer
 
-        # insert new layer
-        self.hidden_x += 50
-        self.network.insert(self.output_index, Layer(self.hidden_x, DEFAULT_Y)) # inserts hidden layer in next position (aka last output index)
+            # insert new layer
+            self.hidden_x += 50
+            self.network.insert(self.output_index, Layer(self.hidden_x, DEFAULT_Y)) # inserts hidden layer in next position (aka last output index)
 
-        # adjust variables
-        self.last_x += 50 # updates last_x which denotes where the x location of layer is
-        self.output_index += 1 # updates output_index, which stores the last index of network array
-        self.network[self.output_index].set_x(self.last_x) # updates x location for output layer/fixes "add out neuron"
+            # adjust variables
+            self.last_x += 50 # updates last_x which denotes where the x location of layer is
+            self.output_index += 1 # updates output_index, which stores the last index of network array
+            self.network[self.output_index].set_x(self.last_x) # updates x location for output layer/fixes "add out neuron"
+
+        else:
+            width = (self.network[self.output_index].get_x() - self.network[0].get_x())
+            spacing = width / (self.output_index + 1)
+            for i in range(1, len(self.network) - 1):
+                self.network[i].move_x_num(self.network[0].get_x() + (spacing * i) - self.network[i].get_x())
+            self.network.insert(self.output_index, Layer(self.network[0].get_x() + (spacing * self.output_index), DEFAULT_Y))
+            self.output_index += 1
 
         canvas.update()
 
