@@ -36,7 +36,7 @@ down_arrow = PhotoImage(master = root, file = os.path.join(os.path.dirname(__fil
 FUNCTIONS = ('linear', 'relu', 'sigmoid', 'softmax', 'softplus', 'softsign', 'tanh', 'selu', 'elu', 'exponential')
 LAYERS = ('Dense', 'Dropout')
 INITIALIZERS = ('random_normal', 'random_uniform', 'truncated_normal', 'zeros', 'ones', 'glorot_normal',
-                'glorot_uniform', 'identity', 'orthogonal', 'constant', 'variance_Scaling')
+                'glorot_uniform', 'identity', 'orthogonal', 'constant', 'variance_scaling')
 
 
 # Simple function to turn (center_x, center_y, radius) into (top_left_x, top_left_y, bottom_right_x, bottom_right_y)
@@ -86,42 +86,76 @@ class Layer:
         self.settings.withdraw()
         self.sett_frame = Frame(self.settings)
         self.sett_frame.pack(expand = True, fill = BOTH)
-        self.layer_type_label = Label(self.sett_frame, text = 'Layer Type')
-        # Buttons for settings
-        self.layer_type_label = Label(self.sett_frame, text = 'Layer Type')
+
+        # Layer type
+        self.layer_type_frame = Frame(self.sett_frame)
+        self.layer_type_label = Label(self.layer_type_frame, text = 'Layer Type')
         self.layer_type_var = StringVar(self.sett_frame)
         self.layer_type_var.set(self.layer_type)
-        self.layer_dropdown = ttk.Combobox(self.sett_frame, textvariable = self.layer_type_var, width = 10,
+        self.layer_dropdown = ttk.Combobox(self.layer_type_frame, textvariable = self.layer_type_var, width = 10,
                                            values = LAYERS, state = 'readonly')
         self.layer_dropdown.bind('<<ComboboxSelected>>', self.arrange_settings)
-        self.num_neurons_label = Label(self.sett_frame, text = 'Number of Neurons')
-        self.num_neurons_var = IntVar(self.settings, self.desired_neurons)
-        self.add_neuron_arrow = Button(self.sett_frame, image = up_arrow, height = 10, command = self.add_desired)
-        self.subtract_neuron = Button(self.sett_frame, image = down_arrow, height = 10, command = self.subtract_desired)
-        self.num_neurons_entry = Entry(self.sett_frame, textvariable = self.num_neurons_var, width = 9)
+        self.layer_type_label.grid(row = 0, column = 0, sticky = W)
+        self.layer_dropdown.grid(row = 1, column = 0, padx = 7, sticky = W)
 
+        # Layer Color
+        self.layer_color_frame = Frame(self.sett_frame)
         self.single_pixel = PhotoImage(width = 1, height = 1)
-        self.color_label = Label(self.sett_frame, text = 'Layer Color')
-        self.color_button = Button(self.sett_frame, bg = self.color, width = 15, height = 15,
+        self.color_label = Label(self.layer_color_frame, text = 'Layer Color')
+        self.color_button = Button(self.layer_color_frame, bg = self.color, width = 15, height = 15,
                                    command = self.set_desired_color, image = self.single_pixel)
+        self.color_label.grid(row = 0, column = 0, sticky = W)
+        self.color_button.grid(row = 1, column = 0, padx = 7, sticky = W)
 
+        # Number of Neurons: Dense
+        self.num_neurons_frame = Frame(self.sett_frame)
+        self.num_neurons_label = Label(self.num_neurons_frame, text = 'Number of Neurons')
+        self.num_neurons_var = IntVar(self.settings, self.desired_neurons)
+        self.add_neuron_arrow = Button(self.num_neurons_frame, image = up_arrow, height = 10,
+                                       command = self.add_desired)
+        self.subtract_neuron_arrow = Button(self.num_neurons_frame, image = down_arrow, height = 10,
+                                            command = self.subtract_desired)
+        self.num_neurons_entry = Entry(self.num_neurons_frame, textvariable = self.num_neurons_var, width = 9)
+        self.num_neurons_label.grid(row = 0, column = 0, columnspan = 3, sticky = W)
+        self.num_neurons_entry.grid(row = 1, column = 1, rowspan = 2)
+        self.add_neuron_arrow.grid(row = 1, column = 0, padx = 7, sticky = W)
+        self.subtract_neuron_arrow.grid(row = 2, column = 0, padx = 7, sticky = W)
+        self.num_neurons_frame.columnconfigure(2, weight = 1)
+
+        # Activation Function: Dense
+        self.function_frame = Frame(self.sett_frame)
         self.function_var = StringVar(self.sett_frame)
         self.function_var.set(self.function)
-        self.function_label = Label(self.sett_frame, text = 'Activation Function')
-        self.function_dropdown = ttk.Combobox(self.sett_frame, textvariable = self.function_var, width = 10,
+        self.function_label = Label(self.function_frame, text = 'Activation Function')
+        self.function_dropdown = ttk.Combobox(self.function_frame, textvariable = self.function_var, width = 10,
                                               values = FUNCTIONS, state = 'readonly')
+        self.function_label.grid(row = 0, column = 0, sticky = W)
+        self.function_dropdown.grid(row = 1, column = 0, padx = 7, sticky = W)
+
+        # Bias Check Mark: Dense
+        self.bias_check_frame = Frame(self.sett_frame)
+        self.use_bias_label = Label(self.bias_check_frame, text = 'Use Bias')
+        self.bias_check_var = BooleanVar(self.bias_check_frame)
+        self.bias_check_var.set(True)
+        self.bias_check = Checkbutton(self.bias_check_frame, variable = self.bias_check_var,
+                                      command = self.switch_bias_dropdown)
+        self.use_bias_label.grid(row = 0, column = 0, sticky = W)
+        self.bias_check.grid(row = 1, column = 0, padx = 7, sticky = W)
+
+        # Bias Initializer: Dense
+        self.bias_initializer_frame = Frame(self.sett_frame)
         self.bias_var = StringVar(self.sett_frame)
         self.bias_var.set(self.bias)
-        self.use_bias_label = Label(self.sett_frame, text = 'Use Bias')
-        self.bias_check_var = BooleanVar(self.sett_frame)
-        self.bias_check_var.set(True)
-        self.bias_check = Checkbutton(self.sett_frame, variable = self.bias_check_var,
-                                      command = self.switch_bias_dropdown)
-        self.bias_label = Label(self.sett_frame, text = 'Bias Initializer')
-        self.bias_dropdown = ttk.Combobox(self.sett_frame, textvariable = self.bias_var, width = 18,
+        self.bias_label = Label(self.bias_initializer_frame, text = 'Bias Initializer')
+        self.bias_dropdown = ttk.Combobox(self.bias_initializer_frame, textvariable = self.bias_var, width = 18,
                                           values = INITIALIZERS, state = 'readonly')
         self.bias_dropdown_flag = True
+        self.bias_label.grid(row = 0, column = 0, sticky = W)
+        self.bias_dropdown.grid(row = 1, column = 0, padx = 7, sticky = W)
 
+        # Rate: Dropout
+
+        # Layer Apply Close
         self.apply_close_frame = Frame(self.sett_frame)
         self.settings_apply = Button(self.apply_close_frame, text = 'Apply', command = self.apply_layer)
         self.settings_close = Button(self.apply_close_frame, text = 'Close', command = self.close_layer)
@@ -212,39 +246,35 @@ class Layer:
         for widget in self.sett_frame.winfo_children():
             widget.grid_forget()
 
-        self.sett_frame.columnconfigure(0, weight = 1)
-        self.sett_frame.columnconfigure(1, weight = 1)
-        self.layer_type_label.grid(row = 0, column = 0, sticky = W)
-        self.layer_dropdown.grid(row = 1, column = 0, padx = 7, sticky = W)
-        self.color_label.grid(row = 0, column = 1, sticky = W)
-        self.color_button.grid(row = 1, column = 1, padx = 5, sticky = W)
-        self.sett_frame.rowconfigure(3, minsize = 20)
-        ttk.Separator(self.sett_frame, orient = HORIZONTAL).grid(row = 3, column = 0, padx = 7, columnspan = 2,
+        self.sett_frame.columnconfigure(0, minsize = 150)
+        self.sett_frame.columnconfigure(1, minsize = 150)
+
+        self.layer_type_frame.grid(row = 0, column = 0, sticky = W)
+
+        self.layer_color_frame.grid(row = 0, column = 1, sticky = W)
+
+        self.sett_frame.rowconfigure(1, minsize = 20)
+        ttk.Separator(self.sett_frame, orient = HORIZONTAL).grid(row = 1, column = 0, padx = 7, columnspan = 2,
                                                                  sticky = EW)
+
+        if self.layer_type == 'Dense':
+            self.num_neurons_frame.grid(row = 2, column = 0, sticky = W)
+
+            self.function_frame.grid(row = 2, column = 1, sticky = W)
+
+            self.sett_frame.grid_rowconfigure(3, minsize = 20)
+
+            self.bias_check_frame.grid(row = 4, column = 0, sticky = W)
+
+            self.bias_initializer_frame.grid(row = 4, column = 1, sticky = W)
+
+        elif self.layer_type == 'Dropout':
+            pass
+
         self.sett_frame.rowconfigure(100, weight = 1)
         ttk.Separator(self.sett_frame, orient = HORIZONTAL).grid(row = 101, column = 0, padx = 7, columnspan = 2,
                                                                  sticky = EW)
         self.apply_close_frame.grid(row = 102, column = 1, padx = 7, sticky = E)
-
-        if self.layer_type == 'Dense':
-            self.num_neurons_label.grid(row = 4, column = 0, sticky = W)
-            self.num_neurons_entry.grid(row = 5, column = 0, rowspan = 2, padx = 32, sticky = W)
-            self.add_neuron_arrow.grid(row = 5, column = 0, padx = 7, sticky = W)
-            self.subtract_neuron.grid(row = 6, column = 0, padx = 7, sticky = W)
-
-            self.function_label.grid(row = 4, column = 1, sticky = W)
-            self.function_dropdown.grid(row = 5, column = 1, padx = 7, sticky = W)
-
-            self.sett_frame.grid_rowconfigure(7, minsize = 20)
-
-            self.use_bias_label.grid(row = 8, column = 0, sticky = W)
-            self.bias_check.grid(row = 9, column = 0, padx = 7, sticky = W)
-
-            self.bias_label.grid(row = 8, column = 1, sticky = W)
-            self.bias_dropdown.grid(row = 9, column = 1, padx = 7, sticky = W)
-
-        elif self.layer_type == 'Dropout':
-            pass
 
     # Code for the layer settings menu that appears on right clicking a neuron
     def open_settings(self, event = None):
