@@ -66,54 +66,54 @@ class Layer:
 
     def move_forward_x(self):
         for i in self.layer:
+            self.CONST_X += 50
             i.move_x(50)
     
     def move_backward_x(self):
         for i in self.layer:
+            self.CONST_X -= 50
             i.move_x(-50)
+    
+    def move_x_num(self, x):
+        for i in self.layer:
+            self.CONST_X += x
+            i.move_x(x)
 
 
 class NeuralNetwork:
     def __init__(self):
-        self.input = Layer((WIN_WIDTH/2) - 50, DEFAULT_Y)
+        # self.input = Layer((WIN_WIDTH/2) - 50, DEFAULT_Y)
+        self.input = Layer(600, DEFAULT_Y)
+
         self.input_index = 0 #not necessary
 
-        self.output = Layer((WIN_WIDTH/2) + 50, DEFAULT_Y)
-        self.output_index = 1
+        # self.output = Layer((WIN_WIDTH/2) + 50, DEFAULT_Y)
+        self.output = Layer(800, DEFAULT_Y)
 
-        self.last_x = self.output.get_x()
+        self.output_index = 1
+        
         self.hidden_x = self.input.get_x() # initial value of 550
         
         self.network = [self.input, self.output]
 
+        self.orient_layers()
+
+
     def add_layer(self):
-        # adjust layers before output
-        for i in self.network:
-            if (i == self.network[self.output_index]):
-                break
-            i.move_backward_x()
-            
-
-        # move output layer
-        self.network[self.output_index].move_forward_x() # moves layer
-
-        # insert new layer
-        self.hidden_x += 50
-        self.network.insert(self.output_index, Layer(self.hidden_x, DEFAULT_Y)) # inserts hidden layer in next position (aka last output index)
-
-        # adjust variables
-        self.last_x += 50 # updates last_x which denotes where the x location of layer is
-        self.output_index += 1 # updates output_index, which stores the last index of network array
-        self.network[self.output_index].set_x(self.last_x) # updates x location for output layer/fixes "add out neuron"
-
-        canvas.update()
+        self.network.insert(self.output_index, Layer(self.hidden_x, DEFAULT_Y))
+        self.output_index += 1
+        self.orient_layers()
 
     def get_network(self):
         return self.network
 
     def get_output_index(self):
-        print(self.output_index)
         return self.output_index
+    
+    def orient_layers(self):
+        for i in range(len(self.network)):
+            self.network[i].move_x_num((WIN_WIDTH - 40) / (self.output_index + 1) * (i) - self.network[i].get_x() + 10)
+
 
 
 app = NeuralNetwork()
