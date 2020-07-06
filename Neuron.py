@@ -119,10 +119,6 @@ class NeuralNetwork:
         self.network = [self.input, self.output]
 
     def add_layer(self):
-<<<<<<< HEAD
-        self.last_x += WIN_WIDTH
-        self.network.append(Layer(self.last_x, DEFAULT_Y))
-=======
         if ((self.output_index + 1) < 12):
             # adjust layers before output
             for i in self.network:
@@ -151,7 +147,6 @@ class NeuralNetwork:
             self.network.insert(self.output_index, Layer(self.network[0].get_x() + (spacing * self.output_index), DEFAULT_Y))
             self.output_index += 1
 
->>>>>>> PushOutput
         canvas.update()
 
     def get_network(self):
