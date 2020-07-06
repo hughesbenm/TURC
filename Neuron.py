@@ -128,7 +128,6 @@ class NeuralNetwork:
         return self.network
 
     def get_output_index(self):
-        print(self.output_index)
         return self.output_index
 
 
