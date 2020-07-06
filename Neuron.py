@@ -12,11 +12,7 @@ DEFAULT_Y = 50
 root = Tk()
 root.minsize(WIN_WIDTH, WIN_HEIGHT)
 menu = Menu(root)
-<<<<<<< HEAD
-canvas = Canvas(root, height=CAN_HEIGHT, width=CAN_WIDTH)
-=======
 canvas = Canvas(root, height=600, width=1200)
->>>>>>> PushOutput
 
 canvas.pack()
 
@@ -69,9 +65,6 @@ class Layer:
 
 
     def next_location(self):
-<<<<<<< HEAD
-        self.y_interval += self.y_interval
-=======
         self.last_y += 100
     
 
@@ -95,20 +88,12 @@ class Layer:
         for i in self.layer:
             i.move_x(x)
             self.CONST_X += x
->>>>>>> PushOutput
-
 
 class NeuralNetwork:
     def __init__(self):
-<<<<<<< HEAD
-        self.input = Layer(CAN_WIDTH / 4, CAN_HEIGHT / 2, 'red')
-        self.hidden = [Layer(CAN_WIDTH / 2, CAN_HEIGHT / 2)]
-        self.output = Layer(CAN_WIDTH / 4 * 3, CAN_HEIGHT / 2, 'blue')
-        self.last_x = WIN_WIDTH / 4 * 3
-=======
         self.input = Layer((WIN_WIDTH/2) - 75, DEFAULT_Y)
         self.input_index = 0 #not necessary
->>>>>>> PushOutput
+
 
         self.output = Layer((WIN_WIDTH/2) + 25, DEFAULT_Y)
         self.output_index = 1
@@ -157,15 +142,8 @@ class NeuralNetwork:
 
 
 app = NeuralNetwork()
-<<<<<<< HEAD
-Button(text = 'add', command = app.add_layer).pack()
-Button(text = 'add input neuron', command = app.network[0].add_neuron).pack()
-Button(text = 'add out neuron', command = app.network[1].add_neuron).pack()
-Button(text = 'add hidden neuron', command = app.network[2].add_neuron).pack()
-=======
 Button(text = 'add hidden layer', command = app.add_layer).pack()
 Button(text = 'add input neuron').pack()
 Button(text = 'add out neuron', command = app.network[app.get_output_index()].add_neuron).pack()
 Button(text = 'add hidden neuron').pack()
->>>>>>> PushOutput
 root.mainloop()
