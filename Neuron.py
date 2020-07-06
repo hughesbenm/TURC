@@ -12,7 +12,11 @@ DEFAULT_Y = 50
 root = Tk()
 root.minsize(WIN_WIDTH, WIN_HEIGHT)
 menu = Menu(root)
+<<<<<<< HEAD
 canvas = Canvas(root, height=CAN_HEIGHT, width=CAN_WIDTH)
+=======
+canvas = Canvas(root, height=600, width=1200)
+>>>>>>> PushOutput
 
 canvas.pack()
 
@@ -34,6 +38,9 @@ class Neuron:
 
     def get_tag(self):
         return self.node
+    
+    def move_x(self, x):
+        canvas.move(self.node, x, 0)
 
 
 class Layer:
@@ -45,10 +52,12 @@ class Layer:
         self.num_neurons = 1
         canvas.tag_bind(self.layer[0].get_tag(), '<Button-3>', self.set_color)
 
+
     def set_color(self, event = None):
         self.color = askcolor()[1]
         for i in self.layer:
             i.set_background(self.color)
+
 
     def add_neuron(self):
         self.layer.append(Neuron(self.color, self.CONST_X, self.y_interval, 25))
@@ -58,35 +67,110 @@ class Layer:
             canvas.coords(self.layer[i].get_tag(), coords(self.CONST_X, self.y_interval * (i + 1), 25))
         canvas.tag_bind(self.layer[self.num_neurons - 1].get_tag(), '<Button-3>', self.set_color)
 
+
     def next_location(self):
+<<<<<<< HEAD
         self.y_interval += self.y_interval
+=======
+        self.last_y += 100
+    
+
+    def get_x(self):
+        return self.CONST_X
+
+    def set_x(self, x):
+        self.CONST_X = x
+
+    def move_forward_x(self):
+        for i in self.layer:
+            i.move_x(50)
+            self.CONST_X += 50
+    
+    def move_backward_x(self):
+        for i in self.layer:
+            i.move_x(-50)
+            self.CONST_X -= 50
+    
+    def move_x_num(self, x):
+        for i in self.layer:
+            i.move_x(x)
+            self.CONST_X += x
+>>>>>>> PushOutput
 
 
 class NeuralNetwork:
     def __init__(self):
+<<<<<<< HEAD
         self.input = Layer(CAN_WIDTH / 4, CAN_HEIGHT / 2, 'red')
         self.hidden = [Layer(CAN_WIDTH / 2, CAN_HEIGHT / 2)]
         self.output = Layer(CAN_WIDTH / 4 * 3, CAN_HEIGHT / 2, 'blue')
         self.last_x = WIN_WIDTH / 4 * 3
+=======
+        self.input = Layer((WIN_WIDTH/2) - 75, DEFAULT_Y)
+        self.input_index = 0 #not necessary
+>>>>>>> PushOutput
 
-        self.input.add_neuron()
-        self.hidden[0].add_neuron()
-        self.hidden[0].add_neuron()
+        self.output = Layer((WIN_WIDTH/2) + 25, DEFAULT_Y)
+        self.output_index = 1
 
-        self.network = [self.input, self.output, self.hidden[0]]
+        self.last_x = self.output.get_x()
+        self.hidden_x = self.input.get_x() # initial value of 550
+        
+        self.network = [self.input, self.output]
 
     def add_layer(self):
+<<<<<<< HEAD
         self.last_x += WIN_WIDTH
         self.network.append(Layer(self.last_x, DEFAULT_Y))
+=======
+        if ((self.output_index + 1) < 12):
+            # adjust layers before output
+            for i in self.network:
+                if (i == self.network[self.output_index]):
+                    break
+                i.move_backward_x()
+                
+
+            # move output layer
+            self.network[self.output_index].move_forward_x() # moves layer
+
+            # insert new layer
+            self.hidden_x += 50
+            self.network.insert(self.output_index, Layer(self.hidden_x, DEFAULT_Y)) # inserts hidden layer in next position (aka last output index)
+
+            # adjust variables
+            self.last_x += 50 # updates last_x which denotes where the x location of layer is
+            self.output_index += 1 # updates output_index, which stores the last index of network array
+            self.network[self.output_index].set_x(self.last_x) # updates x location for output layer/fixes "add out neuron"
+
+        else:
+            width = (self.network[self.output_index].get_x() - self.network[0].get_x())
+            spacing = width / (self.output_index + 1)
+            for i in range(1, len(self.network) - 1):
+                self.network[i].move_x_num(self.network[0].get_x() + (spacing * i) - self.network[i].get_x())
+            self.network.insert(self.output_index, Layer(self.network[0].get_x() + (spacing * self.output_index), DEFAULT_Y))
+            self.output_index += 1
+
+>>>>>>> PushOutput
         canvas.update()
 
     def get_network(self):
         return self.network
 
+    def get_output_index(self):
+        return self.output_index
+
 
 app = NeuralNetwork()
+<<<<<<< HEAD
 Button(text = 'add', command = app.add_layer).pack()
 Button(text = 'add input neuron', command = app.network[0].add_neuron).pack()
 Button(text = 'add out neuron', command = app.network[1].add_neuron).pack()
 Button(text = 'add hidden neuron', command = app.network[2].add_neuron).pack()
+=======
+Button(text = 'add hidden layer', command = app.add_layer).pack()
+Button(text = 'add input neuron').pack()
+Button(text = 'add out neuron', command = app.network[app.get_output_index()].add_neuron).pack()
+Button(text = 'add hidden neuron').pack()
+>>>>>>> PushOutput
 root.mainloop()
