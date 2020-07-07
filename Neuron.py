@@ -7,10 +7,6 @@ import os.path
 WIN_WIDTH = 1200
 WIN_HEIGHT = 600
 
-# Main Canvas's dimensions, not sure if working
-CAN_WIDTH = 1100
-CAN_HEIGHT = 500
-
 # Create the standard window
 root = Tk()
 root.minsize(WIN_WIDTH, WIN_HEIGHT)
@@ -21,7 +17,7 @@ root.config(menu=menu)
 root.resizable(False, False)
 
 # Create and add the canvas that takes up the entire main window
-canvas = Canvas(root, height=CAN_HEIGHT, width=CAN_WIDTH)
+canvas = Canvas(root, height=WIN_HEIGHT, width=WIN_WIDTH)
 canvas.pack()
 canvas.place(anchor = CENTER, relheight = .95, relwidth = 0.95, relx = 0.5, rely = 0.5)
 
@@ -307,8 +303,8 @@ class NeuralNetwork:
         self.last_x += WIN_WIDTH
         self.num_hidden += 1
         self.hidden_desired += 1
-        self.network.append(Layer(self.last_x, CAN_HEIGHT / 2))
-        self.hidden.append(Layer(self.last_x, CAN_HEIGHT / 2))
+        self.network.append(Layer(self.last_x, WIN_HEIGHT / 2))
+        self.hidden.append(Layer(self.last_x, WIN_HEIGHT / 2))
         canvas.update()
 
     # Decrease the number of hidden layers by one
