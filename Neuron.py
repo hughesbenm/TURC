@@ -8,6 +8,7 @@ CAN_WIDTH = 1100
 CAN_HEIGHT = 500
 DEFAULT_Y = 50
 
+
 root = Tk()
 root.minsize(WIN_WIDTH, WIN_HEIGHT)
 menu = Menu(root)
@@ -47,10 +48,12 @@ class Layer:
         self.num_neurons = 1
         canvas.tag_bind(self.layer[0].get_tag(), '<Button-3>', self.set_color)
 
+
     def set_color(self, event = None):
         self.color = askcolor()[1]
         for i in self.layer:
             i.set_background(self.color)
+
 
     def add_neuron(self):
         self.layer.append(Neuron(self.color, self.CONST_X, self.y_interval, 25))
@@ -60,8 +63,11 @@ class Layer:
             canvas.coords(self.layer[i].get_tag(), coords(self.CONST_X, self.y_interval * (i + 1), 25))
         canvas.tag_bind(self.layer[self.num_neurons - 1].get_tag(), '<Button-3>', self.set_color)
 
+
     def next_location(self):
         self.y_interval += self.y_interval
+        self.last_y += 100
+    
 
     def get_x(self):
         return self.CONST_X
@@ -87,6 +93,10 @@ class Layer:
 
 class NeuralNetwork:
     def __init__(self):
+        self.input = Layer(CAN_WIDTH / 4, CAN_HEIGHT / 2, 'red')
+        self.hidden = [Layer(CAN_WIDTH / 2, CAN_HEIGHT / 2)]
+        self.output = Layer(CAN_WIDTH / 4 * 3, CAN_HEIGHT / 2, 'blue')
+        self.last_x = WIN_WIDTH / 4 * 3
         self.input = Layer((WIN_WIDTH/2) - 75, DEFAULT_Y)
         self.input_index = 0 #not necessary
 
