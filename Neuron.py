@@ -164,14 +164,11 @@ class Layer:
         self.settings_close.grid(column = 2, row = 0, padx = 7, pady = 7, sticky = W)
         self.apply_close_frame.columnconfigure(0, weight = 1)
 
-    # Runs when "Apply" is clicked in a layer's settings
-    # Changes the layer based on changes made in the settings menu
-    def apply_layer(self):
-        self.layer_type = self.layer_type_var.get()
-        self.function = self.function_var.get()
-        self.bias = self.bias_var.get()
-        self.desired_neurons = self.num_neurons_var.get()
-        self.color = self.desired_color
+    def set_neurons(self, num = None):
+        if num is None:
+            num = self.desired_neurons
+        else:
+            self.desired_neurons = num
         if self.desired_neurons > self.num_neurons:
             for i in range(self.desired_neurons - self.num_neurons):
                 self.layer.append(Neuron(self.color, self.CONST_X, self.y_interval, 25))
@@ -181,6 +178,16 @@ class Layer:
                 canvas.delete(self.layer.pop().get_tag())
         self.num_neurons = self.desired_neurons
         self.orient_neurons()
+
+    # Runs when "Apply" is clicked in a layer's settings
+    # Changes the layer based on changes made in the settings menu
+    def apply_layer(self):
+        self.layer_type = self.layer_type_var.get()
+        self.function = self.function_var.get()
+        self.bias = self.bias_var.get()
+        self.desired_neurons = self.num_neurons_var.get()
+        self.color = self.desired_color
+        self.set_neurons()
         self.set_color()
         self.settings.withdraw()
 
@@ -226,7 +233,6 @@ class Layer:
 
     # Spread the neurons evenly throughout the layer
     def orient_neurons(self):
-        self.y_interval = canvas.winfo_height() / (self.num_neurons + 1)
         self.y_interval = WIN_HEIGHT / (self.num_neurons + 1)
         for i in range(self.num_neurons):
             canvas.coords(self.layer[i].get_tag(), coords(self.CONST_X, self.y_interval * (i + 1), 25))
@@ -287,17 +293,17 @@ class Layer:
     def move_forward_x(self):
         for i in self.layer:
             i.move_x(50)
-            self.CONST_X += 50
+        self.CONST_X += 50
 
     def move_backward_x(self):
         for i in self.layer:
             i.move_x(-50)
-            self.CONST_X -= 50
+        self.CONST_X -= 50
 
     def move_x_num(self, x):
         for i in self.layer:
             i.move_x(x)
-            self.CONST_X += x
+        self.CONST_X += x
 
     # Code for the layer settings menu that appears on right clicking a neuron
     def open_settings(self, event = None):
@@ -314,25 +320,23 @@ class NeuralNetwork:
     # Starts with an input layer with 2 nodes, a single hidden layer with 3 nodes, and an output  layer with two nodes
     def __init__(self):
         self.last_x = WIN_WIDTH / 4 * 3
-        self.input = Layer((WIN_WIDTH/2) - 75, WIN_HEIGHT / 2)
-
-        self.output = Layer((WIN_WIDTH/2) + 25, WIN_HEIGHT / 2)
+        self.input = Layer((WIN_WIDTH/2) - 75, WIN_HEIGHT / 2, 'blue')
+        self.input.set_neurons(2)
+        self.output = Layer((WIN_WIDTH/2) + 25, WIN_HEIGHT / 2, 'red')
         self.output_index = 1
-        self.num_hidden = 1
+        self.num_hidden = 0
         self.hidden_desired = 1
-        self.input.add_neuron()
-        self.hidden[0].add_neuron()
-        self.hidden[0].add_neuron()
 
         self.last_x = self.output.get_x()
         self.hidden_x = self.input.get_x()
         # initial value of 550
 
         self.network = [self.input, self.output]
+        self.add_layer()
+        self.network[1].set_neurons(3)
 
     # Increase the number of hidden layers by one
     def add_layer(self):
-        self.last_x += WIN_WIDTH
         self.num_hidden += 1
         if (self.output_index + 1) < 12:
             # adjust layers before output
@@ -352,7 +356,7 @@ class NeuralNetwork:
             # adjust variables
             self.last_x += 50  # updates last_x which denotes where the x location of layer is
             self.output_index += 1  # updates output_index, which stores the last index of network array
-            self.network[self.output_index].set_x(self.last_x)
+            # self.network[self.output_index].set_x(self.last_x)
             # updates x location for output layer/fixes "add out neuron"
 
         else:
@@ -382,8 +386,7 @@ class NeuralNetwork:
 
 app = NeuralNetwork()
 
-Button(canvas, text = 'add hidden layer', command = app.add_hidden).pack(side = BOTTOM)
-Button(canvas, text = 'add input neuron').pack(side = BOTTOM)
-Button(canvas, text = 'add out neuron', command = app.network[app.get_output_index()].add_neuron).pack(side = BOTTOM)
-Button(canvas, text = 'add hidden neuron').pack(side = BOTTOM)
+Button(canvas, text = 'add hidden layer', command = app.add_layer).pack(side = BOTTOM)
+Button(canvas, text = 'add input neuron', command = app.input.add_neuron).pack(side = BOTTOM)
+Button(canvas, text = 'add out neuron', command = app.output.add_neuron).pack(side = BOTTOM)
 root.mainloop()
