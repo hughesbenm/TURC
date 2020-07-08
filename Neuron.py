@@ -15,12 +15,10 @@ root.minsize(WIN_WIDTH, WIN_HEIGHT)
 # Create and add the menu bar at the top of the window
 menu = Menu(root)
 canvas = Canvas(root, height = WIN_HEIGHT, width = WIN_WIDTH)
-root.config(menu=menu)
+root.config(menu = menu)
 root.resizable(False, False)
 
 # Create and add the canvas that takes up the entire main window
-canvas = Canvas(root, height=WIN_HEIGHT, width=WIN_WIDTH)
-canvas.pack()
 canvas.place(anchor = CENTER, relheight = .95, relwidth = 0.95, relx = 0.5, rely = 0.5)
 
 # Necessary for canvas.winfo_ATTRIBUTE to be updated, see NeuralNetwork.__init__() and Layer.orient_neurons()
@@ -31,10 +29,10 @@ up_arrow = PhotoImage(master = root, file = os.path.join(os.path.dirname(__file_
 down_arrow = PhotoImage(master = root, file = os.path.join(os.path.dirname(__file__), "Images/Down.png"))
 
 # Constants for the keras side of things
-FUNCTIONS = ('linear', 'relu', 'sigmoid', 'softmax', 'softplus', 'softsign', 'tanh', 'selu', 'elu', 'exponential')
-LAYERS = ('Dense', 'Dropout')
-INITIALIZERS = ('random_normal', 'random_uniform', 'truncated_normal', 'zeros', 'ones', 'glorot_normal',
-                'glorot_uniform', 'identity', 'orthogonal', 'constant', 'variance_scaling')
+FUNCTIONS = (None, 'elu', 'exponential', 'relu', 'selu', 'sigmoid', 'softmax', 'softplus', 'softsign', 'tanh')
+LAYERS = ('Activation', 'Convolutional', 'Dense', 'Dropout', 'Flatten', 'Normalization', 'Pooling')
+INITIALIZERS = ('zeros', 'constant', 'identity', 'glorot_normal', 'glorot_uniform', 'ones', 'orthogonal',
+                'random_normal', 'random_uniform', 'truncated_normal', 'variance_scaling')
 
 
 # Simple function to turn (center_x, center_y, radius) into (top_left_x, top_left_y, bottom_right_x, bottom_right_y)
@@ -74,9 +72,11 @@ class Layer:
         self.num_neurons = 1
         self.desired_neurons = 1
         self.desired_color = self.color
-        self.layer_type = LAYERS[0]     # Dense
+        self.layer_type = LAYERS[0]     # Activation
         self.function = FUNCTIONS[0]    # Linear
         self.bias = INITIALIZERS[0]     # Zeros
+        self.dropout_rate = 0.75
+        self.desired_rate = 0.75
         self.desired_function = self.function
         canvas.tag_bind(self.layer[0].get_tag(), '<Button-3>', self.open_settings)
         self.settings = Toplevel()
@@ -93,7 +93,7 @@ class Layer:
         self.layer_type_label = Label(self.layer_type_frame, text = 'Layer Type')
         self.layer_type_var = StringVar(self.sett_frame)
         self.layer_type_var.set(self.layer_type)
-        self.layer_dropdown = ttk.Combobox(self.layer_type_frame, textvariable = self.layer_type_var, width = 10,
+        self.layer_dropdown = ttk.Combobox(self.layer_type_frame, textvariable = self.layer_type_var, width = 13,
                                            values = LAYERS, state = 'readonly')
         self.layer_dropdown.bind('<<ComboboxSelected>>', self.arrange_settings)
         self.layer_type_label.grid(row = 0, column = 0, sticky = W)
@@ -109,6 +109,12 @@ class Layer:
         self.color_button.grid(row = 1, column = 0, padx = 7, sticky = W)
 
         # Number of Neurons: Dense
+        def check_num_neuron_entry(inp):
+            if (inp.isdigit() and inp != '0') or inp == '':
+                return True
+            else:
+                return False
+        num_reg = self.settings.register(check_num_neuron_entry)
         self.num_neurons_frame = Frame(self.sett_frame)
         self.num_neurons_label = Label(self.num_neurons_frame, text = 'Number of Neurons')
         self.num_neurons_var = IntVar(self.settings, self.desired_neurons)
@@ -116,14 +122,15 @@ class Layer:
                                        command = self.add_desired)
         self.subtract_neuron_arrow = Button(self.num_neurons_frame, image = down_arrow, height = 10,
                                             command = self.subtract_desired)
-        self.num_neurons_entry = Entry(self.num_neurons_frame, textvariable = self.num_neurons_var, width = 9)
+        self.num_neurons_entry = Entry(self.num_neurons_frame, textvariable = self.num_neurons_var, width = 9,
+                                       validate = 'key', validatecommand = (num_reg, '%P'))
         self.num_neurons_label.grid(row = 0, column = 0, columnspan = 3, sticky = W)
         self.num_neurons_entry.grid(row = 1, column = 1, rowspan = 2)
         self.add_neuron_arrow.grid(row = 1, column = 0, padx = 7, sticky = W)
         self.subtract_neuron_arrow.grid(row = 2, column = 0, padx = 7, sticky = W)
         self.num_neurons_frame.columnconfigure(2, weight = 1)
 
-        # Activation Function: Dense
+        # Activation Function: Activation/Dense
         self.function_frame = Frame(self.sett_frame)
         self.function_var = StringVar(self.sett_frame)
         self.function_var.set(self.function)
@@ -155,6 +162,29 @@ class Layer:
         self.bias_dropdown.grid(row = 1, column = 0, padx = 7, sticky = W)
 
         # Rate: Dropout
+        def check_dropout_entry(inp):
+
+            if inp == '':
+                return True
+            elif inp.replace('.', '1', 1).isdigit() and 0 <= float(inp) <= 1:
+                return True
+            else:
+                return False
+        drop_reg = self.settings.register(check_dropout_entry)
+        self.dropout_rate_frame = Frame(self.sett_frame)
+        self.dropout_rate_label = Label(self.dropout_rate_frame, text = 'Rate')
+        self.dropout_rate_var = DoubleVar(self.settings, self.dropout_rate)
+        self.increase_rate_arrow = Button(self.dropout_rate_frame, image = up_arrow, height = 10,
+                                          command = self.increase_dropout_rate)
+        self.decrease_rate_arrow = Button(self.dropout_rate_frame, image = down_arrow, height = 10,
+                                          command = self.decrease_dropout_rate)
+        self.dropout_rate_entry = Entry(self.dropout_rate_frame, textvariable = self.dropout_rate_var, width = 9,
+                                        validate = 'key', validatecommand = (drop_reg, '%P'))
+        self.dropout_rate_label.grid(row = 0, column = 0, columnspan = 3, sticky = W)
+        self.dropout_rate_entry.grid(row = 1, column = 1, rowspan = 2)
+        self.increase_rate_arrow.grid(row = 1, column = 0, padx = 7, sticky = W)
+        self.decrease_rate_arrow.grid(row = 2, column = 0, padx = 7, sticky = W)
+        self.dropout_rate_frame.columnconfigure(2, weight = 1)
 
         # Layer Apply Close
         self.apply_close_frame = Frame(self.sett_frame)
@@ -182,10 +212,16 @@ class Layer:
     # Runs when "Apply" is clicked in a layer's settings
     # Changes the layer based on changes made in the settings menu
     def apply_layer(self):
+        if self.dropout_rate_entry.get() == '':
+            self.dropout_rate_var.set(self.desired_rate)
+        if self.num_neurons_entry.get() == '':
+            self.num_neurons_var.set(self.desired_neurons)
         self.layer_type = self.layer_type_var.get()
         self.function = self.function_var.get()
         self.bias = self.bias_var.get()
         self.desired_neurons = self.num_neurons_var.get()
+        self.desired_rate = self.dropout_rate_var.get()
+        self.dropout_rate = self.desired_rate
         self.color = self.desired_color
         self.set_neurons()
         self.set_color()
@@ -249,6 +285,18 @@ class Layer:
             self.desired_neurons = 1
         self.num_neurons_var.set(self.desired_neurons)
 
+    def increase_dropout_rate(self, rate = 0.05):
+        self.desired_rate += rate
+        if self.desired_rate >= 1.0:
+            self.desired_rate = 1.0
+        self.dropout_rate_var.set(round(self.desired_rate, 2))
+
+    def decrease_dropout_rate(self, rate = 0.05):
+        self.desired_rate -= rate
+        if self.desired_rate <= 0.0:
+            self.desired_rate = 0.0
+        self.dropout_rate_var.set(round(self.desired_rate, 2))
+
     def arrange_settings(self, event = None):
         self.layer_type = self.layer_type_var.get()
         for widget in self.sett_frame.winfo_children():
@@ -265,7 +313,13 @@ class Layer:
         ttk.Separator(self.sett_frame, orient = HORIZONTAL).grid(row = 1, column = 0, padx = 7, columnspan = 2,
                                                                  sticky = EW)
 
-        if self.layer_type == 'Dense':
+        if self.layer_type == 'Activation':
+            self.function_frame.grid(row = 2, column = 0, sticky = W)
+
+        elif self.layer_type == 'Convolutional':
+            pass
+
+        elif self.layer_type == 'Dense':
             self.num_neurons_frame.grid(row = 2, column = 0, sticky = W)
 
             self.function_frame.grid(row = 2, column = 1, sticky = W)
@@ -277,6 +331,15 @@ class Layer:
             self.bias_initializer_frame.grid(row = 4, column = 1, sticky = W)
 
         elif self.layer_type == 'Dropout':
+            self.dropout_rate_frame.grid(row = 2, column = 0, sticky = W)
+
+        elif self.layer_type == 'Flatten':
+            pass
+
+        elif self.layer_type == 'Normalization':
+            pass
+
+        elif self.layer_type == 'Pooling':
             pass
 
         self.sett_frame.rowconfigure(100, weight = 1)
