@@ -398,8 +398,12 @@ class NeuralNetwork:
         self.network = [self.input, self.output]
         self.add_layer()
         self.network[1].set_neurons(3)
-        self.network = [self.input, self.output, self.hidden[0]]
+        self.network = [self.input, self.output]
         self.net_model = None  # should be Sequential()
+        self.training_data = None
+        self.prediction_inputs = None
+        self.run_button = Button(canvas, text = 'Run Network', bg = 'green', command = self.run)
+        self.run_button.pack(side = BOTTOM)
 
     # Increase the number of hidden layers by one
     def add_layer(self):
@@ -454,11 +458,11 @@ class NeuralNetwork:
         pass
 
     # Bring up a window to ask the user to select a file for data to predict results for
-    def prompt_predict_inputs(self):
+    def prompt_prediction_inputs(self):
         pass
 
     def compile_network(self):
-        for hidden_layer in self.hidden:
+        for hidden_layer in self.network:
             # Check for different layer types
             pass
 
@@ -467,8 +471,8 @@ class NeuralNetwork:
 
     def run(self, event = None):
         if self.training_data is not None:
-            self.prompt_predict_inputs()
-        if self.predict_inputs is not None:
+            self.prompt_prediction_inputs()
+        if self.prediction_inputs is not None:
             self.prompt_training_data()
 
         self.compile_network()
