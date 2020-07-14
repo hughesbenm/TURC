@@ -198,9 +198,7 @@ class Layer:
         self.apply_close_frame.columnconfigure(0, weight = 1)
 
     def set_neurons(self, num = None):
-        if num is None:
-            num = self.desired_neurons
-        else:
+        if num is not None:
             self.desired_neurons = num
         if self.desired_neurons > self.num_neurons:
             for i in range(self.desired_neurons - self.num_neurons):
@@ -400,7 +398,6 @@ class NeuralNetwork:
         self.network = [self.input, self.output]
         self.add_layer()
         self.network[1].set_neurons(3)
-        self.network = [self.input, self.output]
         self.net_model = keras.Sequential()
         self.training_data = None
         self.prediction_inputs = None
