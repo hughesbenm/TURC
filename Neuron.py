@@ -1,8 +1,10 @@
 from tkinter import *
-# from keras import *
+import tensorflow as tf
+from tensorflow import keras
 import tkinter.ttk as ttk
 from tkinter.colorchooser import *
 import os.path
+from sklearn.datasets import make_classification
 
 # Main window's dimensions
 WIN_WIDTH = 1200
@@ -399,7 +401,7 @@ class NeuralNetwork:
         self.add_layer()
         self.network[1].set_neurons(3)
         self.network = [self.input, self.output]
-        self.net_model = None  # should be Sequential()
+        self.net_model = keras.Sequential()
         self.training_data = None
         self.prediction_inputs = None
         self.run_button = Button(canvas, text = 'Run Network', bg = 'green', command = self.run)
@@ -462,12 +464,16 @@ class NeuralNetwork:
         pass
 
     def compile_network(self):
-        for hidden_layer in self.network:
+        for l in self.network:
             # Check for different layer types
-            pass
+            if l.layer_type == 'Dense':
+                self.net_model.add(keras.layers.Dense(1, input_shape = (2,), activation = 'sigmoid'))
 
-            # Add the correct layer to the model
-            pass
+        self.net_model.compile(optimizer = 'adam', loss = 'binary_crossentropy', metrics = ['accuracy'])
+        X, Y = make_classification(n_samples = 1000, n_features = 2, n_redundant = 0, n_informative = 2,
+                                   random_state = 7, n_clusters_per_class = 1)
+        self.net_model.fit(x = X, y = Y, verbose = 0, epochs = 50)
+        print(self.net_model.summary())
 
     def run(self, event = None):
         if self.training_data is not None:
