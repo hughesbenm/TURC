@@ -1,5 +1,5 @@
 from tkinter import *
-import tensorflow as tf
+# import tensorflow as tf
 from tensorflow import keras
 import tkinter.ttk as ttk
 from tkinter.colorchooser import *
@@ -461,9 +461,11 @@ class NeuralNetwork:
         pass
 
     def compile_network(self):
-        for l in self.network:
+        for layer in self.network:
             # Check for different layer types
-            if l.layer_type == 'Dense':
+            if layer.layer_type == 'Activation':
+                self.net_model.add(keras.layers.Activation(input_shape = (2,), activation = 'sigmoid'))
+            elif layer.layer_type == 'Dense':
                 self.net_model.add(keras.layers.Dense(1, input_shape = (2,), activation = 'sigmoid'))
 
         self.net_model.compile(optimizer = 'adam', loss = 'binary_crossentropy', metrics = ['accuracy'])
