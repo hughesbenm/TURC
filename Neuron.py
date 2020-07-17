@@ -12,6 +12,8 @@ import pandas as pd
 WIN_WIDTH = 1200
 WIN_HEIGHT = 600
 DEFAULT_Y = WIN_HEIGHT / 2
+MAROON = '#700000'
+FOREST = '#007016'
 
 # Create the standard window
 root = Tk()
@@ -22,6 +24,7 @@ menu = Menu(root)
 canvas = Canvas(root, height = WIN_HEIGHT, width = WIN_WIDTH)
 root.config(menu = menu)
 root.resizable(False, False)
+root.focus_force()
 
 # Create and add the canvas that takes up the entire main window
 canvas.place(anchor = CENTER, relheight = .95, relwidth = 0.95, relx = 0.5, rely = 0.5)
@@ -403,7 +406,12 @@ class NeuralNetwork:
         self.net_model = keras.Sequential()
         self.training_data = None
         self.prediction_inputs = None
-        self.run_button = Button(canvas, text = 'Run Network', bg = 'green', command = self.run)
+        self.training_button = Button(canvas, text = 'Select Training Data', command = self.prompt_training_data)
+        self.training_button.pack(side = BOTTOM)
+        self.prediction_button = Button(canvas, text = 'Select Prediction Inputs',
+                                        command = self.prompt_prediction_input)
+        self.prediction_button.pack(side = BOTTOM)
+        self.run_button = Button(canvas, text = 'Run Network', bg = MAROON, command = self.run, state = DISABLED)
         self.run_button.pack(side = BOTTOM)
 
     # Increase the number of hidden layers by one
@@ -456,16 +464,41 @@ class NeuralNetwork:
 
     # Bring up a window to ask the user to select a file for data to train on
     def prompt_training_data(self):
-        root.filename = filedialog.askopenfilename(initialdir = os.path.dirname(__file__), title = "Select File")
+        root.filename = filedialog.askopenfilename(initialdir = os.path.dirname(__file__), title = "Select File",
+                                                   filetypes = [('All valid files',
+                                                                 '*.xls;*.xlsx;*.xlsm;*.xlsb;*.odf;*.csv'),
+                                                                ('Excel files', '*.xls;*.xlsx;*.xlsm;*.xlsb;*.odf'),
+                                                                ('CSV files', '*.csv')])
         try:
-            self.training_data = pd.read_csv(root.filename, sep = ',', header = None)
+            try:
+                self.training_data = pd.read_csv(root.filename, sep = ',', header = None)
+                print("Hello")
+            except:
+                self.training_data = pd.read_excel(root.filename, usecols = [0], nrows = 10)
+                print("Hello")
+            if self.training_data is not None and self.prediction_inputs is not None:
+                self.run_button.config(state = NORMAL, bg = FOREST)
         except:
-            self.training_data = pd.read_excel(root.filename, usecols = [0], nrows = 10)
-        print(self.training_data)
+            print("Nope")
 
-    # Bring up a window to ask the user to select a file for data to predict results for
-    def prompt_prediction_inputs(self):
-        pass
+    # Bring up a window to ask the user to select a file for data to train on
+    def prompt_prediction_input(self):
+        root.filename = filedialog.askopenfilename(initialdir = os.path.dirname(__file__), title = "Select File",
+                                                   filetypes = [('All valid files',
+                                                                 '*.xls;*.xlsx;*.xlsm;*.xlsb;*.odf;*.csv'),
+                                                                ('Excel files', '*.xls;*.xlsx;*.xlsm;*.xlsb;*.odf'),
+                                                                ('CSV files', '*.csv')])
+        try:
+            try:
+                self.prediction_inputs = pd.read_csv(root.filename, sep = ',', header = None)
+                print("Hello")
+            except:
+                self.prediction_inputs = pd.read_excel(root.filename, usecols = [0], nrows = 10)
+                print("Hello")
+            if self.training_data is not None and self.prediction_inputs is not None:
+                self.run_button.config(state = NORMAL, bg = FOREST)
+        except:
+            print("Nope")
 
     def compile_network(self):
         for layer in self.network:
@@ -482,12 +515,7 @@ class NeuralNetwork:
         print(self.net_model.summary())
 
     def run(self, event = None):
-        while self.training_data is None:
-            self.prompt_training_data()
-        # while self.prediction_inputs is None:
-        #     self.prompt_prediction_inputs()
-
-        # self.compile_network()
+        self.compile_network()
 
         # Train the completed model on the predetermined training data
         pass
@@ -499,6 +527,4 @@ class NeuralNetwork:
 app = NeuralNetwork()
 
 Button(canvas, text = 'add hidden layer', command = app.add_layer).pack(side = BOTTOM)
-Button(canvas, text = 'add input neuron', command = app.input.add_neuron).pack(side = BOTTOM)
-Button(canvas, text = 'add out neuron', command = app.output.add_neuron).pack(side = BOTTOM)
 root.mainloop()
