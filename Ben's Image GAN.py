@@ -20,16 +20,22 @@ from matplotlib import pyplot as plt
 import numpy as np
 from tensorflow.examples.tutorials.mnist import input_data
 mnist = input_data.read_data_sets('MNIST_data', one_hot = True)
+
+
 def gen_image(arr):
     two_d = (np.reshape(arr, (28, 28)) * 255).astype(np.uint8)
     plt.imshow(two_d, interpolation='nearest')
     return plt
 
+
 # Get a batch of two random images and show in a pop-up window.
 batch_xs, batch_ys = mnist.test.next_batch(2)
+
+
 def preImg(img, net):
     gen_image(img).show()
     print(net.predict(img))
+
 def img(img):
     gen_image(img).show()
 

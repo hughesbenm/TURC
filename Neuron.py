@@ -1,10 +1,12 @@
 from tkinter import *
-# import tensorflow as tf
+from tkinter import filedialog
 from tensorflow import keras
 import tkinter.ttk as ttk
 from tkinter.colorchooser import *
 import os.path
 from sklearn.datasets import make_classification
+import numpy as np
+import pandas as pd
 
 # Main window's dimensions
 WIN_WIDTH = 1200
@@ -454,7 +456,12 @@ class NeuralNetwork:
 
     # Bring up a window to ask the user to select a file for data to train on
     def prompt_training_data(self):
-        pass
+        root.filename = filedialog.askopenfilename(initialdir = os.path.dirname(__file__), title = "Select File")
+        try:
+            self.training_data = pd.read_csv(root.filename, sep = ',', header = None)
+        except:
+            self.training_data = pd.read_excel(root.filename, usecols = [0], nrows = 10)
+        print(self.training_data)
 
     # Bring up a window to ask the user to select a file for data to predict results for
     def prompt_prediction_inputs(self):
@@ -475,12 +482,12 @@ class NeuralNetwork:
         print(self.net_model.summary())
 
     def run(self, event = None):
-        if self.training_data is not None:
-            self.prompt_prediction_inputs()
-        if self.prediction_inputs is not None:
+        while self.training_data is None:
             self.prompt_training_data()
+        # while self.prediction_inputs is None:
+        #     self.prompt_prediction_inputs()
 
-        self.compile_network()
+        # self.compile_network()
 
         # Train the completed model on the predetermined training data
         pass
