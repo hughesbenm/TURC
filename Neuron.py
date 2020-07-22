@@ -38,7 +38,9 @@ down_arrow = PhotoImage(master = root, file = os.path.join(os.path.dirname(__fil
 
 # Constants for the keras side of things
 FUNCTIONS = (None, 'elu', 'exponential', 'relu', 'selu', 'sigmoid', 'softmax', 'softplus', 'softsign', 'tanh')
+
 LAYERS = ('Activation', 'Convolutional', 'Dense', 'Dropout', 'Flatten', 'Normalization', 'Pooling')
+
 INITIALIZERS = ('zeros', 'constant', 'identity', 'glorot_normal', 'glorot_uniform', 'ones', 'orthogonal',
                 'random_normal', 'random_uniform', 'truncated_normal', 'variance_scaling')
 
@@ -83,8 +85,8 @@ class Layer:
         self.layer_type = LAYERS[0]     # Activation
         self.function = FUNCTIONS[0]    # Linear
         self.bias = INITIALIZERS[0]     # Zeros
-        self.dropout_rate = 0.75
-        self.desired_rate = 0.75
+        self.dropout_rate = 0.25
+        self.desired_rate = self.dropout_rate
         self.desired_function = self.function
         canvas.tag_bind(self.layer[0].get_tag(), '<Button-3>', self.open_settings)
         self.settings = Toplevel()
@@ -168,6 +170,10 @@ class Layer:
         self.bias_dropdown_flag = True
         self.bias_label.grid(row = 0, column = 0, sticky = W)
         self.bias_dropdown.grid(row = 1, column = 0, padx = 7, sticky = W)
+
+        # Pooling Type: Pooling
+        self.pooling_type_frame = Frame(self.sett_frame)
+
 
         # Rate: Dropout
         def check_dropout_entry(inp):
@@ -390,8 +396,14 @@ class NeuralNetwork:
     def __init__(self):
         self.last_x = WIN_WIDTH / 4 * 3
         self.input = Layer((WIN_WIDTH/2) - 75, WIN_HEIGHT / 2, 'blue')
+        self.input.layer_type = "Input"
+        self.input.layer_type_var.set(self.input.layer_type)
+        self.input.layer_dropdown.config(state = DISABLED)
         self.input.set_neurons(2)
         self.output = Layer((WIN_WIDTH/2) + 25, WIN_HEIGHT / 2, 'red')
+        self.output.layer_type = "Output"
+        self.output.layer_type_var.set(self.output.layer_type)
+        self.output.layer_dropdown.config(state = DISABLED)
         self.output_index = 1
         self.num_hidden = 0
         self.hidden_desired = 1
@@ -505,8 +517,18 @@ class NeuralNetwork:
             # Check for different layer types
             if layer.layer_type == 'Activation':
                 self.net_model.add(keras.layers.Activation(input_shape = (2,), activation = 'sigmoid'))
+
             elif layer.layer_type == 'Dense':
                 self.net_model.add(keras.layers.Dense(1, input_shape = (2,), activation = 'sigmoid'))
+
+            elif layer.layer_type == 'Dropout':
+                self.net_model.add(keras.layers.Dropout(layer.dropout_rate, input_shape = (2,)))
+
+            elif layer.layer_type == 'Flatten':
+                self.net_model.add(keras.layers.Flatten())
+
+            elif layer.layer_type == 'Pooling':
+                pass
 
         self.net_model.compile(optimizer = 'adam', loss = 'binary_crossentropy', metrics = ['accuracy'])
         X, Y = make_classification(n_samples = 1000, n_features = 2, n_redundant = 0, n_informative = 2,
