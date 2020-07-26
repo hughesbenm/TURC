@@ -386,6 +386,10 @@ class Layer:
         self.num_neurons_var.set(self.desired_neurons)
         self.settings.mainloop()
 
+    def erase_layer(self):
+        for neuron in self.layer:
+            canvas.delete(neuron.get_tag())
+
 
 # The entire network itself, a collection of layers
 class NeuralNetwork:
@@ -444,11 +448,12 @@ class NeuralNetwork:
         net_details = [self.x_train, self.y_train, self.x_test, self.y_test]
         layer_details = []
         for layer in self.network:
-            if layer.layer_type != "Input" and layer.layer_type != "Output":
-                layer_details.append([layer.layer_type])
+            layer_details.append([layer.layer_type])
         np.savez("saves.npz", net_details = net_details, layer_details = layer_details)
 
     def load_net(self):
+        self.erase_network()
+        self.network = [self.network[0], self.network[len(self.network) - 1]]
         try:
             saves = np.load("saves.npz", allow_pickle = True)
             net_details = saves['net_details']
@@ -461,45 +466,10 @@ class NeuralNetwork:
 
     # Increase the number of hidden layers by one
     def add_layer(self):
+        self.network.insert(self.num_hidden + 1, Layer())
         self.num_hidden += 1
-        if (self.output_index + 1) < 12:
-            # adjust layers before output
-            for i in self.network:
-                if i == self.network[self.output_index]:
-                    break
-                i.move_backward_x()
-
-            # move output layer
-            self.network[self.output_index].move_forward_x()  # moves layer
-
-            # insert new layer
-            self.hidden_x += 50
-            self.network.insert(self.output_index, Layer())
-            # inserts hidden layer in next position (aka last output index)
-
-            # adjust variables
-            self.last_x += 50  # updates last_x which denotes where the x location of layer is
-            self.output_index += 1  # updates output_index, which stores the last index of network array
-            # self.network[self.output_index].set_x(self.last_x)
-            # updates x location for output layer/fixes "add out neuron"
-
-        else:
-            width = (self.network[self.output_index].get_x() - self.network[0].get_x())
-            spacing = width / (self.output_index + 1)
-            for i in range(1, len(self.network) - 1):
-                self.network[i].move_x_num(self.network[0].get_x() + (spacing * i) - self.network[i].get_x())
-            self.network.insert(self.output_index, Layer())
-            self.output_index += 1
-
         self.orient_network()
         canvas.update()
-
-    # Return the network itself as an array of its Layers
-    def get_network(self):
-        return self.network
-
-    def get_output_index(self):
-        return self.output_index
 
     def prompt_data(self, data):
         root.filename = filedialog.askopenfilename(initialdir = os.path.dirname(__file__), title = "Select File",
@@ -561,6 +531,9 @@ class NeuralNetwork:
         # Predict the results for the predetermined inputs
         pass
 
+    def erase_network(self):
+        for layer in self.network:
+            layer.erase_layer()
 
 app = NeuralNetwork()
 
