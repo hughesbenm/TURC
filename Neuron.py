@@ -7,6 +7,7 @@ import os.path
 from sklearn.datasets import make_classification
 import numpy as np
 import pandas as pd
+import logging
 
 # Main window's dimensions
 WIN_WIDTH = 1200
@@ -430,6 +431,16 @@ class NeuralNetwork:
         self.y_test_button.pack(side = BOTTOM)
         self.run_button = Button(canvas, text = 'Run Network', bg = MAROON, command = self.run, state = DISABLED)
         self.run_button.pack(side = BOTTOM)
+        Button(canvas, text = 'load', command = self.load_net).pack(side = TOP)
+        Button(canvas, text = 'save', command = self.save_net).pack(side = TOP)
+
+    def save_net(self):
+        arr = [self.network[1]]
+        np.savez("Test.npz", arr = arr)
+
+    def load_net(self):
+        arr = np.load("Test.npz")
+        self.network[1] = arr['arr']
 
     # Increase the number of hidden layers by one
     def add_layer(self):
