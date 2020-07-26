@@ -7,11 +7,12 @@ import os.path
 from sklearn.datasets import make_classification
 import numpy as np
 import pandas as pd
-import logging
 
 # Main window's dimensions
 WIN_WIDTH = 1200
 WIN_HEIGHT = 600
+CAN_WIDTH = WIN_WIDTH * 0.95
+CAN_HEIGHT = WIN_HEIGHT * 0.95
 DEFAULT_Y = WIN_HEIGHT / 2
 MAROON = '#700000'
 FOREST = '#007016'
@@ -55,9 +56,6 @@ def coords(x, y, radius):
 class Neuron:
     # default constructor, creates a separate oval for each node
     def __init__(self, color, x, y, radius):
-        self.x = x
-        self.y = y
-        self.radius = radius
         self.node = canvas.create_oval(coords(x, y, radius), fill = color)
 
     # Set the color of this node, should always be the same for an entire layer
@@ -75,11 +73,11 @@ class Neuron:
 # Collection of Neurons
 class Layer:
     # default constructor, each Layer starts with a single neuron
-    def __init__(self, x, y, color='black'):
-        self.CONST_X = x
-        self.y_interval = y
+    def __init__(self, color = 'black'):
+        self.x = 0
+        self.y_interval = 0
         self.color = color
-        self.layer = [Neuron(self.color, self.CONST_X, self.y_interval, 25)]
+        self.layer = [Neuron(self.color, self.x, self.y_interval, 25)]
         self.num_neurons = 1
         self.desired_neurons = 1
         self.desired_color = self.color
@@ -175,7 +173,6 @@ class Layer:
         # Pooling Type: Pooling
         self.pooling_type_frame = Frame(self.sett_frame)
 
-
         # Rate: Dropout
         def check_dropout_entry(inp):
 
@@ -214,7 +211,7 @@ class Layer:
             self.desired_neurons = num
         if self.desired_neurons > self.num_neurons:
             for i in range(self.desired_neurons - self.num_neurons):
-                self.layer.append(Neuron(self.color, self.CONST_X, self.y_interval, 25))
+                self.layer.append(Neuron(self.color, self.x, self.y_interval, 25))
                 canvas.tag_bind(self.layer[-1].get_tag(), '<Button-3>', self.open_settings)
         if self.desired_neurons < self.num_neurons:
             for i in range(self.num_neurons - self.desired_neurons):
@@ -267,7 +264,7 @@ class Layer:
 
     # Increase the number of neurons in the layer by one, bind it to settings on right click, reorient the layer
     def add_neuron(self):
-        self.layer.append(Neuron(self.color, self.CONST_X, self.y_interval, 25))
+        self.layer.append(Neuron(self.color, self.x, self.y_interval, 25))
         self.num_neurons += 1
         self.desired_neurons += 1
         canvas.tag_bind(self.layer[self.num_neurons - 1].get_tag(), '<Button-3>', self.open_settings)
@@ -282,9 +279,9 @@ class Layer:
 
     # Spread the neurons evenly throughout the layer
     def orient_neurons(self):
-        self.y_interval = WIN_HEIGHT / (self.num_neurons + 1)
+        self.y_interval = CAN_HEIGHT / (self.num_neurons + 1)
         for i in range(self.num_neurons):
-            canvas.coords(self.layer[i].get_tag(), coords(self.CONST_X, self.y_interval * (i + 1), 25))
+            canvas.coords(self.layer[i].get_tag(), coords(self.x, self.y_interval * (i + 1), 25))
 
     # Increase the number of desired neurons by one, only called by settings menu
     def add_desired(self):
@@ -361,25 +358,25 @@ class Layer:
         self.apply_close_frame.grid(row = 102, column = 1, padx = 7, sticky = E)
 
     def get_x(self):
-        return self.CONST_X
+        return self.x
 
     def set_x(self, x):
-        self.CONST_X = x
+        self.x = x
 
     def move_forward_x(self):
         for i in self.layer:
             i.move_x(50)
-        self.CONST_X += 50
+        self.x += 50
 
     def move_backward_x(self):
         for i in self.layer:
             i.move_x(-50)
-        self.CONST_X -= 50
+        self.x -= 50
 
     def move_x_num(self, x):
         for i in self.layer:
             i.move_x(x)
-        self.CONST_X += x
+        self.x += x
 
     # Code for the layer settings menu that appears on right clicking a neuron
     def open_settings(self, event = None):
@@ -395,13 +392,13 @@ class NeuralNetwork:
     # Default constructor for the network
     # Starts with an input layer with 2 nodes, a single hidden layer with 3 nodes, and an output  layer with two nodes
     def __init__(self):
-        self.last_x = WIN_WIDTH / 4 * 3
-        self.input = Layer((WIN_WIDTH/2) - 75, WIN_HEIGHT / 2, 'blue')
+        self.last_x = CAN_WIDTH / 4 * 3
+        self.input = Layer('blue')
         self.input.layer_type = "Input"
         self.input.layer_type_var.set(self.input.layer_type)
         self.input.layer_dropdown.config(state = DISABLED)
         self.input.set_neurons(2)
-        self.output = Layer((WIN_WIDTH/2) + 25, WIN_HEIGHT / 2, 'red')
+        self.output = Layer('red')
         self.output.layer_type = "Output"
         self.output.layer_type_var.set(self.output.layer_type)
         self.output.layer_dropdown.config(state = DISABLED)
@@ -414,13 +411,12 @@ class NeuralNetwork:
         # initial value of 550
 
         self.network = [self.input, self.output]
-        self.add_layer()
-        self.network[1].set_neurons(3)
         self.net_model = keras.Sequential()
         self.x_train = None
         self.y_train = None
         self.x_test = None
         self.y_test = None
+
         self.x_train_button = Button(canvas, text = 'X_Train', command = lambda: self.prompt_data(self.x_train))
         self.x_train_button.pack(side = BOTTOM)
         self.y_train_button = Button(canvas, text = 'Y_Train', command = lambda: self.prompt_data(self.y_train))
@@ -434,13 +430,34 @@ class NeuralNetwork:
         Button(canvas, text = 'load', command = self.load_net).pack(side = TOP)
         Button(canvas, text = 'save', command = self.save_net).pack(side = TOP)
 
+        self.orient_network()
+
+    def orient_network(self):
+        x_interval = CAN_WIDTH / (len(self.network) + 1)
+        last_x = x_interval
+        for layer in self.network:
+            layer.x = last_x
+            last_x += x_interval
+            layer.orient_neurons()
+
     def save_net(self):
-        arr = [self.network[1]]
-        np.savez("Test.npz", arr = arr)
+        net_details = [self.x_train, self.y_train, self.x_test, self.y_test]
+        layer_details = []
+        for layer in self.network:
+            if layer.layer_type != "Input" and layer.layer_type != "Output":
+                layer_details.append([layer.layer_type])
+        np.savez("saves.npz", net_details = net_details, layer_details = layer_details)
 
     def load_net(self):
-        arr = np.load("Test.npz")
-        self.network[1] = arr['arr']
+        try:
+            saves = np.load("saves.npz", allow_pickle = True)
+            net_details = saves['net_details']
+            layer_details = saves['layer_details']
+            for i in range(len(layer_details)):
+                self.network.insert(len(self.network) - 1, Layer())
+                self.orient_network()
+        except FileNotFoundError:
+            pass
 
     # Increase the number of hidden layers by one
     def add_layer(self):
@@ -457,7 +474,7 @@ class NeuralNetwork:
 
             # insert new layer
             self.hidden_x += 50
-            self.network.insert(self.output_index, Layer(self.hidden_x, DEFAULT_Y))
+            self.network.insert(self.output_index, Layer())
             # inserts hidden layer in next position (aka last output index)
 
             # adjust variables
@@ -471,17 +488,11 @@ class NeuralNetwork:
             spacing = width / (self.output_index + 1)
             for i in range(1, len(self.network) - 1):
                 self.network[i].move_x_num(self.network[0].get_x() + (spacing * i) - self.network[i].get_x())
-            self.network.insert(self.output_index, Layer(self.network[0].get_x() + (spacing * self.output_index),
-                                                         DEFAULT_Y))
+            self.network.insert(self.output_index, Layer())
             self.output_index += 1
 
+        self.orient_network()
         canvas.update()
-
-    # Decrease the number of hidden layers by one
-    def subtract_hidden(self, layer):
-        self.num_hidden -= 1
-        self.hidden_desired -= 1
-        self.network.remove(layer)
 
     # Return the network itself as an array of its Layers
     def get_network(self):
@@ -499,15 +510,12 @@ class NeuralNetwork:
         try:
             try:
                 temp_data = pd.read_csv(root.filename, sep = ',', header = None)
-                print(temp_data)
             except:
                 temp_data = pd.read_excel(root.filename, usecols = [0], nrows = 10)
-                print(temp_data)
 
             if data is self.x_train:
                 self.x_train = temp_data
             elif data is self.y_train:
-                print(self.x_train)
                 self.y_train = temp_data
             elif data is self.x_test:
                 self.x_test = temp_data
@@ -519,7 +527,6 @@ class NeuralNetwork:
                     self.run_button.config(state = NORMAL, bg = FOREST)
         except:
             print("Nope")
-
 
     def compile_network(self):
         for layer in self.network:
