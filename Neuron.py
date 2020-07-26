@@ -416,13 +416,18 @@ class NeuralNetwork:
         self.add_layer()
         self.network[1].set_neurons(3)
         self.net_model = keras.Sequential()
-        self.training_data = None
-        self.prediction_inputs = None
-        self.training_button = Button(canvas, text = 'Select Training Data', command = self.prompt_training_data)
-        self.training_button.pack(side = BOTTOM)
-        self.prediction_button = Button(canvas, text = 'Select Prediction Inputs',
-                                        command = self.prompt_prediction_input)
-        self.prediction_button.pack(side = BOTTOM)
+        self.x_train = None
+        self.y_train = None
+        self.x_test = None
+        self.y_test = None
+        self.x_train_button = Button(canvas, text = 'X_Train', command = lambda: self.prompt_data(self.x_train))
+        self.x_train_button.pack(side = BOTTOM)
+        self.y_train_button = Button(canvas, text = 'Y_Train', command = lambda: self.prompt_data(self.y_train))
+        self.y_train_button.pack(side = BOTTOM)
+        self.x_test_button = Button(canvas, text = 'X_Test', command = lambda: self.prompt_data(self.x_test))
+        self.x_test_button.pack(side = BOTTOM)
+        self.y_test_button = Button(canvas, text = 'Y_Test', command = lambda: self.prompt_data(self.y_test))
+        self.y_test_button.pack(side = BOTTOM)
         self.run_button = Button(canvas, text = 'Run Network', bg = MAROON, command = self.run, state = DISABLED)
         self.run_button.pack(side = BOTTOM)
 
@@ -474,8 +479,7 @@ class NeuralNetwork:
     def get_output_index(self):
         return self.output_index
 
-    # Bring up a window to ask the user to select a file for data to train on
-    def prompt_training_data(self):
+    def prompt_data(self, data):
         root.filename = filedialog.askopenfilename(initialdir = os.path.dirname(__file__), title = "Select File",
                                                    filetypes = [('All valid files',
                                                                  '*.xls;*.xlsx;*.xlsm;*.xlsb;*.odf;*.csv'),
@@ -483,34 +487,28 @@ class NeuralNetwork:
                                                                 ('CSV files', '*.csv')])
         try:
             try:
-                self.training_data = pd.read_csv(root.filename, sep = ',', header = None)
-                print("Hello")
+                temp_data = pd.read_csv(root.filename, sep = ',', header = None)
+                print(temp_data)
             except:
-                self.training_data = pd.read_excel(root.filename, usecols = [0], nrows = 10)
-                print("Hello")
-            if self.training_data is not None and self.prediction_inputs is not None:
-                self.run_button.config(state = NORMAL, bg = FOREST)
+                temp_data = pd.read_excel(root.filename, usecols = [0], nrows = 10)
+                print(temp_data)
+
+            if data is self.x_train:
+                self.x_train = temp_data
+            elif data is self.y_train:
+                print(self.x_train)
+                self.y_train = temp_data
+            elif data is self.x_test:
+                self.x_test = temp_data
+            elif data is self.y_test:
+                self.y_test = temp_data
+
+            if self.x_train is not None and self.y_train is not None:
+                if self.x_test is not None and self.y_test is not None:
+                    self.run_button.config(state = NORMAL, bg = FOREST)
         except:
             print("Nope")
 
-    # Bring up a window to ask the user to select a file for data to train on
-    def prompt_prediction_input(self):
-        root.filename = filedialog.askopenfilename(initialdir = os.path.dirname(__file__), title = "Select File",
-                                                   filetypes = [('All valid files',
-                                                                 '*.xls;*.xlsx;*.xlsm;*.xlsb;*.odf;*.csv'),
-                                                                ('Excel files', '*.xls;*.xlsx;*.xlsm;*.xlsb;*.odf'),
-                                                                ('CSV files', '*.csv')])
-        try:
-            try:
-                self.prediction_inputs = pd.read_csv(root.filename, sep = ',', header = None)
-                print("Hello")
-            except:
-                self.prediction_inputs = pd.read_excel(root.filename, usecols = [0], nrows = 10)
-                print("Hello")
-            if self.training_data is not None and self.prediction_inputs is not None:
-                self.run_button.config(state = NORMAL, bg = FOREST)
-        except:
-            print("Nope")
 
     def compile_network(self):
         for layer in self.network:
