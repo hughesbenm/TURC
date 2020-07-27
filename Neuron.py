@@ -20,11 +20,11 @@ ACTIVATION_COLOR = '#0F891C'
 CONVOLUTIONAL_COLOR = '#B40E0E'
 DENSE_COLOR = '#741062'
 DROPOUT_COLOR = 'black'
-FLATTEN_COLOR = '#1B2678'
-NORMALIZATION_COLOR = '#5B5654'
-POOLING_COLOR = '#CF5416'
-INPUT_COLOR = '#1DB1CE'
-OUTPUT_COLOR = '#EACC23'
+FLATTEN_COLOR = '#1DB1CE'
+NORMALIZATION_COLOR = '#1B2678'
+POOLING_COLOR = '#5B5654'
+INPUT_COLOR = '#EACC23'
+OUTPUT_COLOR = '#CF5416'
 
 # Create the standard window
 root = Tk()
@@ -48,15 +48,15 @@ up_arrow = PhotoImage(master = root, file = os.path.join(os.path.dirname(__file_
 down_arrow = PhotoImage(master = root, file = os.path.join(os.path.dirname(__file__), "Images/Down.png"))
 
 # Constants for the keras side of things
-FUNCTIONS = (None, 'elu', 'exponential', 'relu', 'selu', 'sigmoid', 'softmax', 'softplus', 'softsign', 'tanh')
+FUNCTIONS = [None, 'elu', 'exponential', 'relu', 'selu', 'sigmoid', 'softmax', 'softplus', 'softsign', 'tanh']
 
-LAYERS = ('Activation', 'Convolutional', 'Dense', 'Dropout', 'Flatten', 'Normalization', 'Pooling')
+LAYERS = ['Activation', 'Convolutional', 'Dense', 'Dropout', 'Flatten', 'Normalization', 'Pooling']
 
-LAYER_COLORS = (ACTIVATION_COLOR, CONVOLUTIONAL_COLOR, DENSE_COLOR, DROPOUT_COLOR, FLATTEN_COLOR, NORMALIZATION_COLOR,
-                POOLING_COLOR)
+LAYER_COLORS = [ACTIVATION_COLOR, CONVOLUTIONAL_COLOR, DENSE_COLOR, DROPOUT_COLOR, FLATTEN_COLOR, NORMALIZATION_COLOR,
+                POOLING_COLOR]
 
-INITIALIZERS = ('zeros', 'constant', 'identity', 'glorot_normal', 'glorot_uniform', 'ones', 'orthogonal',
-                'random_normal', 'random_uniform', 'truncated_normal', 'variance_scaling')
+INITIALIZERS = ['zeros', 'constant', 'identity', 'glorot_normal', 'glorot_uniform', 'ones', 'orthogonal',
+                'random_normal', 'random_uniform', 'truncated_normal', 'variance_scaling']
 
 
 # Simple function to turn (center_x, center_y, radius) into (top_left_x, top_left_y, bottom_right_x, bottom_right_y)
@@ -85,15 +85,15 @@ class Neuron:
 # Collection of Neurons
 class Layer:
     # default constructor, each Layer starts with a single neuron
-    def __init__(self, color = ACTIVATION_COLOR):
+    def __init__(self, color = LAYER_COLORS[0]):
         self.x = 0
         self.y_interval = 0
         self.color = color
         self.layer = [Neuron(self.color, self.x, self.y_interval, 25)]
         self.num_neurons = 1
         self.desired_neurons = 1
-        self.desired_color = self.color
         self.layer_type = LAYERS[0]     # Activation
+        self.desired_type = self.layer_type
         self.function = FUNCTIONS[0]    # Linear
         self.bias = INITIALIZERS[0]     # Zeros
         self.dropout_rate = 0.25
@@ -119,15 +119,6 @@ class Layer:
         self.layer_dropdown.bind('<<ComboboxSelected>>', self.arrange_settings)
         self.layer_type_label.grid(row = 0, column = 0, sticky = W)
         self.layer_dropdown.grid(row = 1, column = 0, padx = 7, sticky = W)
-
-        # Layer Color
-        self.layer_color_frame = Frame(self.sett_frame)
-        self.single_pixel = PhotoImage(width = 1, height = 1)
-        self.color_label = Label(self.layer_color_frame, text = 'Layer Color')
-        self.color_button = Button(self.layer_color_frame, bg = self.color, width = 15, height = 15,
-                                   command = self.set_desired_color, image = self.single_pixel)
-        self.color_label.grid(row = 0, column = 0, sticky = W)
-        self.color_button.grid(row = 1, column = 0, padx = 7, sticky = W)
 
         # Number of Neurons: Dense
         def check_num_neuron_entry(inp):
@@ -234,24 +225,20 @@ class Layer:
     # Runs when "Apply" is clicked in a layer's settings
     # Changes the layer based on changes made in the settings menu
     def apply_layer(self):
-        i = 0
-        for layer_type in LAYERS:
-            if self.layer_type == layer_type:
-                self.color = LAYER_COLORS[i]
-            i += 1
         if self.dropout_rate_entry.get() == '':
             self.dropout_rate_var.set(self.desired_rate)
         if self.num_neurons_entry.get() == '':
             self.num_neurons_var.set(self.desired_neurons)
-        self.layer_type = self.layer_type_var.get()
+        self.layer_type = self.desired_type
         self.function = self.function_var.get()
         self.bias = self.bias_var.get()
         self.desired_neurons = self.num_neurons_var.get()
         self.desired_rate = self.dropout_rate_var.get()
         self.dropout_rate = self.desired_rate
-        self.color = self.desired_color
         self.set_neurons()
-        self.set_color()
+        if self.layer_type != 'Input' and self.layer_type != 'Output':
+            self.color = LAYER_COLORS[LAYERS.index(self.layer_type)]
+            self.set_color()
         self.settings.withdraw()
 
     # Runs when "Close" is clicked in a layer's settings
@@ -260,14 +247,9 @@ class Layer:
         self.settings.withdraw()
         self.num_neurons_var.set(self.num_neurons)
         self.desired_neurons = self.num_neurons
-        self.desired_color = self.color
+        self.desired_type = self.layer_type
+        self.layer_type_var.set(self.layer_type)
 
-    # Set a layer's desired color in settings
-    def set_desired_color(self, event = None):
-        self.desired_color = askcolor(parent = self.sett_frame)[1]
-        self.color_button.config(bg = self.desired_color)
-
-    # Set a layer's color
     def set_color(self):
         for neuron in self.layer:
             neuron.set_background(self.color)
@@ -325,7 +307,7 @@ class Layer:
         self.dropout_rate_var.set(round(self.desired_rate, 2))
 
     def arrange_settings(self, event = None):
-        self.layer_type = self.layer_type_var.get()
+        self.desired_type = self.layer_type_var.get()
         for widget in self.sett_frame.winfo_children():
             widget.grid_forget()
 
@@ -334,24 +316,16 @@ class Layer:
 
         self.layer_type_frame.grid(row = 0, column = 0, sticky = W)
 
-        self.layer_color_frame.grid(row = 0, column = 1, sticky = W)
-
         self.sett_frame.rowconfigure(1, minsize = 20)
         ttk.Separator(self.sett_frame, orient = HORIZONTAL).grid(row = 1, column = 0, padx = 7, columnspan = 2,
                                                                  sticky = EW)
 
-        if self.layer_type == 'Activation':
+        if self.desired_type == 'Activation':
             self.function_frame.grid(row = 2, column = 0, sticky = W)
-            self.desired_color = ACTIVATION_COLOR
-            self.color_button.config(bg = self.desired_color)
 
-        elif self.layer_type == 'Convolutional':
-            self.desired_color = CONVOLUTIONAL_COLOR
-            self.color_button.config(bg = self.desired_color)
-
-        elif self.layer_type == 'Dense':
-            self.desired_color = DENSE_COLOR
-            self.color_button.config(bg = self.desired_color)
+        elif self.desired_type == 'Convolutional':
+            pass
+        elif self.desired_type == 'Dense':
             self.num_neurons_frame.grid(row = 2, column = 0, sticky = W)
 
             self.function_frame.grid(row = 2, column = 1, sticky = W)
@@ -362,23 +336,15 @@ class Layer:
 
             self.bias_initializer_frame.grid(row = 4, column = 1, sticky = W)
 
-        elif self.layer_type == 'Dropout':
-            self.desired_color = DROPOUT_COLOR
-            self.color_button.config(bg = self.desired_color)
+        elif self.desired_type == 'Dropout':
             self.dropout_rate_frame.grid(row = 2, column = 0, sticky = W)
 
-        elif self.layer_type == 'Flatten':
-            self.desired_color = FLATTEN_COLOR
-            self.color_button.config(bg = self.desired_color)
-
-        elif self.layer_type == 'Normalization':
-            self.desired_color = NORMALIZATION_COLOR
-            self.color_button.config(bg = self.desired_color)
-
-        elif self.layer_type == 'Pooling':
-            self.desired_color = POOLING_COLOR
-            self.color_button.config(bg = self.desired_color)
-
+        elif self.desired_type == 'Flatten':
+            pass
+        elif self.desired_type == 'Normalization':
+            pass
+        elif self.desired_type == 'Pooling':
+            pass
         self.sett_frame.rowconfigure(100, weight = 1)
         ttk.Separator(self.sett_frame, orient = HORIZONTAL).grid(row = 101, column = 0, padx = 7, columnspan = 2,
                                                                  sticky = EW)
@@ -424,12 +390,12 @@ class NeuralNetwork:
     # Starts with an input layer with 2 nodes, a single hidden layer with 3 nodes, and an output  layer with two nodes
     def __init__(self):
         self.last_x = CAN_WIDTH / 4 * 3
-        self.input = Layer('blue')
+        self.input = Layer(INPUT_COLOR)
         self.input.layer_type = "Input"
         self.input.layer_type_var.set(self.input.layer_type)
         self.input.layer_dropdown.config(state = DISABLED)
         self.input.set_neurons(2)
-        self.output = Layer('red')
+        self.output = Layer(OUTPUT_COLOR)
         self.output.layer_type = "Output"
         self.output.layer_type_var.set(self.output.layer_type)
         self.output.layer_dropdown.config(state = DISABLED)
