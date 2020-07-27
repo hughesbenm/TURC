@@ -16,6 +16,15 @@ CAN_HEIGHT = WIN_HEIGHT * 0.95
 DEFAULT_Y = WIN_HEIGHT / 2
 MAROON = '#700000'
 FOREST = '#007016'
+ACTIVATION_COLOR = '#0F891C'
+CONVOLUTIONAL_COLOR = '#B40E0E'
+DENSE_COLOR = '#741062'
+DROPOUT_COLOR = 'black'
+FLATTEN_COLOR = '#1B2678'
+NORMALIZATION_COLOR = '#5B5654'
+POOLING_COLOR = '#CF5416'
+INPUT_COLOR = '#1DB1CE'
+OUTPUT_COLOR = '#EACC23'
 
 # Create the standard window
 root = Tk()
@@ -42,6 +51,9 @@ down_arrow = PhotoImage(master = root, file = os.path.join(os.path.dirname(__fil
 FUNCTIONS = (None, 'elu', 'exponential', 'relu', 'selu', 'sigmoid', 'softmax', 'softplus', 'softsign', 'tanh')
 
 LAYERS = ('Activation', 'Convolutional', 'Dense', 'Dropout', 'Flatten', 'Normalization', 'Pooling')
+
+LAYER_COLORS = (ACTIVATION_COLOR, CONVOLUTIONAL_COLOR, DENSE_COLOR, DROPOUT_COLOR, FLATTEN_COLOR, NORMALIZATION_COLOR,
+                POOLING_COLOR)
 
 INITIALIZERS = ('zeros', 'constant', 'identity', 'glorot_normal', 'glorot_uniform', 'ones', 'orthogonal',
                 'random_normal', 'random_uniform', 'truncated_normal', 'variance_scaling')
@@ -73,7 +85,7 @@ class Neuron:
 # Collection of Neurons
 class Layer:
     # default constructor, each Layer starts with a single neuron
-    def __init__(self, color = 'black'):
+    def __init__(self, color = ACTIVATION_COLOR):
         self.x = 0
         self.y_interval = 0
         self.color = color
@@ -144,7 +156,7 @@ class Layer:
         self.function_var = StringVar(self.sett_frame)
         self.function_var.set(self.function)
         self.function_label = Label(self.function_frame, text = 'Activation Function')
-        self.function_dropdown = ttk.Combobox(self.function_frame, textvariable = self.function_var, width = 10,
+        self.function_dropdown = ttk.Combobox(self.function_frame, textvariable = self.function_var, width = 11,
                                               values = FUNCTIONS, state = 'readonly')
         self.function_label.grid(row = 0, column = 0, sticky = W)
         self.function_dropdown.grid(row = 1, column = 0, padx = 7, sticky = W)
@@ -222,6 +234,11 @@ class Layer:
     # Runs when "Apply" is clicked in a layer's settings
     # Changes the layer based on changes made in the settings menu
     def apply_layer(self):
+        i = 0
+        for layer_type in LAYERS:
+            if self.layer_type == layer_type:
+                self.color = LAYER_COLORS[i]
+            i += 1
         if self.dropout_rate_entry.get() == '':
             self.dropout_rate_var.set(self.desired_rate)
         if self.num_neurons_entry.get() == '':
@@ -252,8 +269,8 @@ class Layer:
 
     # Set a layer's color
     def set_color(self):
-        for i in self.layer:
-            i.set_background(self.color)
+        for neuron in self.layer:
+            neuron.set_background(self.color)
 
     def switch_bias_dropdown(self):
         if self.bias_dropdown_flag:
@@ -325,11 +342,16 @@ class Layer:
 
         if self.layer_type == 'Activation':
             self.function_frame.grid(row = 2, column = 0, sticky = W)
+            self.desired_color = ACTIVATION_COLOR
+            self.color_button.config(bg = self.desired_color)
 
         elif self.layer_type == 'Convolutional':
-            pass
+            self.desired_color = CONVOLUTIONAL_COLOR
+            self.color_button.config(bg = self.desired_color)
 
         elif self.layer_type == 'Dense':
+            self.desired_color = DENSE_COLOR
+            self.color_button.config(bg = self.desired_color)
             self.num_neurons_frame.grid(row = 2, column = 0, sticky = W)
 
             self.function_frame.grid(row = 2, column = 1, sticky = W)
@@ -341,16 +363,21 @@ class Layer:
             self.bias_initializer_frame.grid(row = 4, column = 1, sticky = W)
 
         elif self.layer_type == 'Dropout':
+            self.desired_color = DROPOUT_COLOR
+            self.color_button.config(bg = self.desired_color)
             self.dropout_rate_frame.grid(row = 2, column = 0, sticky = W)
 
         elif self.layer_type == 'Flatten':
-            pass
+            self.desired_color = FLATTEN_COLOR
+            self.color_button.config(bg = self.desired_color)
 
         elif self.layer_type == 'Normalization':
-            pass
+            self.desired_color = NORMALIZATION_COLOR
+            self.color_button.config(bg = self.desired_color)
 
         elif self.layer_type == 'Pooling':
-            pass
+            self.desired_color = POOLING_COLOR
+            self.color_button.config(bg = self.desired_color)
 
         self.sett_frame.rowconfigure(100, weight = 1)
         ttk.Separator(self.sett_frame, orient = HORIZONTAL).grid(row = 101, column = 0, padx = 7, columnspan = 2,
