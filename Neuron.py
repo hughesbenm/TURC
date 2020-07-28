@@ -86,6 +86,8 @@ class Neuron:
 class Layer:
     # default constructor, each Layer starts with a single neuron
     def __init__(self, color = LAYER_COLORS[0]):
+        self.prev_layer = None
+        self.next_layer = None
         self.x = 0
         self.y_interval = 0
         self.color = color
@@ -396,18 +398,14 @@ class NeuralNetwork:
         self.input.layer_dropdown.config(state = DISABLED)
         self.input.set_neurons(2)
         self.output = Layer(OUTPUT_COLOR)
+        self.input.next_layer = self.output
         self.output.layer_type = "Output"
         self.output.layer_type_var.set(self.output.layer_type)
         self.output.layer_dropdown.config(state = DISABLED)
         self.output_index = 1
-        self.num_hidden = 0
+        self.num_layers = 2
         self.hidden_desired = 1
 
-        self.last_x = self.output.get_x()
-        self.hidden_x = self.input.get_x()
-        # initial value of 550
-
-        self.network = [self.input, self.output]
         self.net_model = keras.Sequential()
         self.x_train = None
         self.y_train = None
@@ -430,37 +428,61 @@ class NeuralNetwork:
         self.orient_network()
 
     def orient_network(self):
-        x_interval = CAN_WIDTH / (len(self.network) + 1)
+        x_interval = CAN_WIDTH / (self.num_layers + 1)
         last_x = x_interval
-        for layer in self.network:
-            layer.x = last_x
+        current = self.input
+        while current is not None:
+            current.x = last_x
             last_x += x_interval
-            layer.orient_neurons()
+            current.orient_neurons()
+            current = current.next_layer
 
     def save_net(self):
         net_details = [self.x_train, self.y_train, self.x_test, self.y_test]
         layer_details = []
-        for layer in self.network:
-            layer_details.append([layer.layer_type])
+        current = self.input.next_layer
+        while current != self.output:
+            layer_details.append([current.layer_type])
+            current = current.next_layer
         np.savez("saves.npz", net_details = net_details, layer_details = layer_details)
 
     def load_net(self):
-        self.erase_network()
-        self.network = [self.network[0], self.network[len(self.network) - 1]]
+        self.erase_hidden()
+        self.input.next_layer = self.output
+        self.output.prev_layer = self.output
+        self.num_layers = 2
         try:
             saves = np.load("saves.npz", allow_pickle = True)
             net_details = saves['net_details']
             layer_details = saves['layer_details']
+            current = self.input
             for i in range(len(layer_details)):
-                self.network.insert(len(self.network) - 1, Layer())
+                new = Layer()
+                # Somehow set new with all the necessary details
+                store_next = current.next_layer
+                current.next_layer = new
+                new.prev_layer = current
+                new.next_layer = store_next
+                store_next.prev_layer = new
+                self.num_layers += 1
                 self.orient_network()
         except FileNotFoundError:
             pass
 
     # Increase the number of hidden layers by one
-    def add_layer(self):
-        self.network.insert(self.num_hidden + 1, Layer())
-        self.num_hidden += 1
+    def add_layer(self, index, new = None):
+        new = Layer(ACTIVATION_COLOR)
+        current = self.input
+        print(current.layer_type)
+        for pos in range(index - 1):
+            current = current.next_layer
+            print(current.layer_type)
+        store_next = current.next_layer
+        current.next_layer = new
+        new.prev_layer = current
+        new.next_layer = store_next
+        store_next.prev_layer = new
+        self.num_layers += 1
         self.orient_network()
         canvas.update()
 
@@ -492,22 +514,24 @@ class NeuralNetwork:
             print("Nope")
 
     def compile_network(self):
-        for layer in self.network:
+        current = self.input.next_layer
+        while current != self.output:
             # Check for different layer types
-            if layer.layer_type == 'Activation':
+            if current.layer_type == 'Activation':
                 self.net_model.add(keras.layers.Activation(input_shape = (2,), activation = 'sigmoid'))
 
-            elif layer.layer_type == 'Dense':
+            elif current.layer_type == 'Dense':
                 self.net_model.add(keras.layers.Dense(1, input_shape = (2,), activation = 'sigmoid'))
 
-            elif layer.layer_type == 'Dropout':
-                self.net_model.add(keras.layers.Dropout(layer.dropout_rate, input_shape = (2,)))
+            elif current.layer_type == 'Dropout':
+                self.net_model.add(keras.layers.Dropout(current.dropout_rate, input_shape = (2,)))
 
-            elif layer.layer_type == 'Flatten':
+            elif current.layer_type == 'Flatten':
                 self.net_model.add(keras.layers.Flatten())
 
-            elif layer.layer_type == 'Pooling':
+            elif current.layer_type == 'Pooling':
                 pass
+            current = current.next_layer
 
         self.net_model.compile(optimizer = 'adam', loss = 'binary_crossentropy', metrics = ['accuracy'])
         X, Y = make_classification(n_samples = 1000, n_features = 2, n_redundant = 0, n_informative = 2,
@@ -524,11 +548,13 @@ class NeuralNetwork:
         # Predict the results for the predetermined inputs
         pass
 
-    def erase_network(self):
-        for layer in self.network:
-            layer.erase_layer()
+    def erase_hidden(self):
+        current = self.input.next_layer
+        while current != self.output:
+            current.erase_layer()
+            current = current.next_layer
+
 
 app = NeuralNetwork()
-
-Button(canvas, text = 'add hidden layer', command = app.add_layer).pack(side = BOTTOM)
+Button(canvas, text = 'add hidden layer', command = lambda: app.add_layer(app.num_layers - 1)).pack(side = BOTTOM)
 root.mainloop()
