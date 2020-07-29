@@ -97,7 +97,8 @@ class Layer:
         self.layer_type = LAYERS[0]     # Activation
         self.desired_type = self.layer_type
         self.function = FUNCTIONS[0]    # Linear
-        self.bias = INITIALIZERS[0]     # Zeros
+        self.bias_type = INITIALIZERS[0]     # Zeros
+        self.use_bias_bool = True
         self.dropout_rate = 0.25
         self.desired_rate = self.dropout_rate
         self.desired_function = self.function
@@ -157,21 +158,20 @@ class Layer:
         # Bias Check Mark: Dense
         self.bias_check_frame = Frame(self.sett_frame)
         self.use_bias_label = Label(self.bias_check_frame, text = 'Use Bias')
-        self.bias_check_var = BooleanVar(self.bias_check_frame)
-        self.bias_check_var.set(True)
-        self.bias_check = Checkbutton(self.bias_check_frame, variable = self.bias_check_var,
-                                      command = self.switch_bias_dropdown)
+        self.use_bias_var = BooleanVar(self.bias_check_frame)
+        self.use_bias_var.set(True)
+        self.bias_check = Checkbutton(self.bias_check_frame, variable = self.use_bias_var,
+                                      command = self.set_bias_dropdown_state)
         self.use_bias_label.grid(row = 0, column = 0, sticky = W)
         self.bias_check.grid(row = 1, column = 0, padx = 7, sticky = W)
 
         # Bias Initializer: Dense
         self.bias_initializer_frame = Frame(self.sett_frame)
         self.bias_var = StringVar(self.sett_frame)
-        self.bias_var.set(self.bias)
+        self.bias_var.set(self.bias_type)
         self.bias_label = Label(self.bias_initializer_frame, text = 'Bias Initializer')
         self.bias_dropdown = ttk.Combobox(self.bias_initializer_frame, textvariable = self.bias_var, width = 18,
                                           values = INITIALIZERS, state = 'readonly')
-        self.bias_dropdown_flag = True
         self.bias_label.grid(row = 0, column = 0, sticky = W)
         self.bias_dropdown.grid(row = 1, column = 0, padx = 7, sticky = W)
 
@@ -233,7 +233,8 @@ class Layer:
             self.num_neurons_var.set(self.desired_neurons)
         self.layer_type = self.desired_type
         self.function = self.function_var.get()
-        self.bias = self.bias_var.get()
+        self.use_bias_bool = self.use_bias_var.get()
+        self.bias_type = self.bias_var.get()
         self.desired_neurons = self.num_neurons_var.get()
         self.desired_rate = self.dropout_rate_var.get()
         self.dropout_rate = self.desired_rate
@@ -247,21 +248,69 @@ class Layer:
     # Disregards any and all changes made in the settings menu
     def close_layer(self):
         self.settings.withdraw()
+        self.reset_settings()
+
+    def arrange_settings(self, event = None):
+        self.desired_type = self.layer_type_var.get()
+        for widget in self.sett_frame.winfo_children():
+            widget.grid_forget()
+
+        self.sett_frame.columnconfigure(0, minsize = 150)
+        self.sett_frame.columnconfigure(1, minsize = 150)
+
+        self.layer_type_frame.grid(row = 0, column = 0, sticky = W)
+
+        self.sett_frame.rowconfigure(1, minsize = 20)
+        ttk.Separator(self.sett_frame, orient = HORIZONTAL).grid(row = 1, column = 0, padx = 7, columnspan = 2,
+                                                                 sticky = EW)
+
+        if self.desired_type == 'Activation':
+            self.function_frame.grid(row = 2, column = 0, sticky = W)
+
+        elif self.desired_type == 'Convolutional':
+            pass
+        elif self.desired_type == 'Dense':
+            self.num_neurons_frame.grid(row = 2, column = 0, sticky = W)
+
+            self.function_frame.grid(row = 2, column = 1, sticky = W)
+
+            self.sett_frame.grid_rowconfigure(3, minsize = 20)
+
+            self.bias_check_frame.grid(row = 4, column = 0, sticky = W)
+
+            self.bias_initializer_frame.grid(row = 4, column = 1, sticky = W)
+
+        elif self.desired_type == 'Dropout':
+            self.dropout_rate_frame.grid(row = 2, column = 0, sticky = W)
+
+        elif self.desired_type == 'Flatten':
+            pass
+        elif self.desired_type == 'Normalization':
+            pass
+        elif self.desired_type == 'Pooling':
+            pass
+        self.sett_frame.rowconfigure(100, weight = 1)
+        ttk.Separator(self.sett_frame, orient = HORIZONTAL).grid(row = 101, column = 0, padx = 7, columnspan = 2,
+                                                                 sticky = EW)
+        self.apply_close_frame.grid(row = 102, column = 1, padx = 7, sticky = E)
+
+    def reset_settings(self):
         self.num_neurons_var.set(self.num_neurons)
         self.desired_neurons = self.num_neurons
         self.desired_type = self.layer_type
         self.layer_type_var.set(self.layer_type)
+        self.use_bias_var.set(self.use_bias_bool)
+        self.set_bias_dropdown_state()
 
     def set_color(self):
         for neuron in self.layer:
             neuron.set_background(self.color)
 
-    def switch_bias_dropdown(self):
-        if self.bias_dropdown_flag:
-            self.bias_dropdown.config(state = 'disable')
-        else:
+    def set_bias_dropdown_state(self):
+        if self.use_bias_var.get():
             self.bias_dropdown.config(state = 'enable')
-        self.bias_dropdown_flag = not self.bias_dropdown_flag
+        else:
+            self.bias_dropdown.config(state = 'disable')
 
     # Increase the number of neurons in the layer by one, bind it to settings on right click, reorient the layer
     def add_neuron(self):
@@ -307,50 +356,6 @@ class Layer:
         if self.desired_rate <= 0.0:
             self.desired_rate = 0.0
         self.dropout_rate_var.set(round(self.desired_rate, 2))
-
-    def arrange_settings(self, event = None):
-        self.desired_type = self.layer_type_var.get()
-        for widget in self.sett_frame.winfo_children():
-            widget.grid_forget()
-
-        self.sett_frame.columnconfigure(0, minsize = 150)
-        self.sett_frame.columnconfigure(1, minsize = 150)
-
-        self.layer_type_frame.grid(row = 0, column = 0, sticky = W)
-
-        self.sett_frame.rowconfigure(1, minsize = 20)
-        ttk.Separator(self.sett_frame, orient = HORIZONTAL).grid(row = 1, column = 0, padx = 7, columnspan = 2,
-                                                                 sticky = EW)
-
-        if self.desired_type == 'Activation':
-            self.function_frame.grid(row = 2, column = 0, sticky = W)
-
-        elif self.desired_type == 'Convolutional':
-            pass
-        elif self.desired_type == 'Dense':
-            self.num_neurons_frame.grid(row = 2, column = 0, sticky = W)
-
-            self.function_frame.grid(row = 2, column = 1, sticky = W)
-
-            self.sett_frame.grid_rowconfigure(3, minsize = 20)
-
-            self.bias_check_frame.grid(row = 4, column = 0, sticky = W)
-
-            self.bias_initializer_frame.grid(row = 4, column = 1, sticky = W)
-
-        elif self.desired_type == 'Dropout':
-            self.dropout_rate_frame.grid(row = 2, column = 0, sticky = W)
-
-        elif self.desired_type == 'Flatten':
-            pass
-        elif self.desired_type == 'Normalization':
-            pass
-        elif self.desired_type == 'Pooling':
-            pass
-        self.sett_frame.rowconfigure(100, weight = 1)
-        ttk.Separator(self.sett_frame, orient = HORIZONTAL).grid(row = 101, column = 0, padx = 7, columnspan = 2,
-                                                                 sticky = EW)
-        self.apply_close_frame.grid(row = 102, column = 1, padx = 7, sticky = E)
 
     def get_x(self):
         return self.x
@@ -442,7 +447,8 @@ class NeuralNetwork:
         layer_details = []
         current = self.input.next_layer
         while current != self.output:
-            layer_details.append([current.layer_type])
+            layer_details.append([current.color, current.layer_type, current.num_neurons, current.function,
+                                  current.use_bias_bool, current.bias_type, current.dropout_rate])
             current = current.next_layer
         np.savez("saves.npz", net_details = net_details, layer_details = layer_details)
 
@@ -457,15 +463,24 @@ class NeuralNetwork:
             layer_details = saves['layer_details']
             current = self.input
             for i in range(len(layer_details)):
-                new = Layer()
+                new = Layer(layer_details[i][0])
+                new.layer_type = layer_details[i][1]
+                new.desired_neurons = layer_details[i][2]
+                new.set_neurons(new.desired_neurons)
+                new.function = layer_details[i][3]
+                new.use_bias_bool = layer_details[i][4]
+                new.bias_type = layer_details[i][5]
+                new.dropout_rate = layer_details[i][6]
                 # Somehow set new with all the necessary details
                 store_next = current.next_layer
                 current.next_layer = new
                 new.prev_layer = current
                 new.next_layer = store_next
                 store_next.prev_layer = new
+                current = current.next_layer
                 self.num_layers += 1
-                self.orient_network()
+                new.reset_settings()
+            self.orient_network()
         except FileNotFoundError:
             pass
 
@@ -473,10 +488,8 @@ class NeuralNetwork:
     def add_layer(self, index, new = None):
         new = Layer(ACTIVATION_COLOR)
         current = self.input
-        print(current.layer_type)
         for pos in range(index - 1):
             current = current.next_layer
-            print(current.layer_type)
         store_next = current.next_layer
         current.next_layer = new
         new.prev_layer = current
