@@ -222,7 +222,6 @@ class Layer:
             for i in range(self.num_neurons - self.desired_neurons):
                 canvas.delete(self.layer.pop().get_tag())
         self.num_neurons = self.desired_neurons
-        self.orient_neurons()
 
     # Runs when "Apply" is clicked in a layer's settings
     # Changes the layer based on changes made in the settings menu
@@ -239,6 +238,7 @@ class Layer:
         self.desired_rate = self.dropout_rate_var.get()
         self.dropout_rate = self.desired_rate
         self.set_neurons()
+        self.orient_neurons()
         if self.layer_type != 'Input' and self.layer_type != 'Output':
             self.color = LAYER_COLORS[LAYERS.index(self.layer_type)]
             self.set_color()
@@ -333,6 +333,21 @@ class Layer:
         for i in range(self.num_neurons):
             canvas.coords(self.layer[i].get_tag(), coords(self.x, self.y_interval * (i + 1), 25))
 
+        current = self.next_layer
+        while current is not None and current.layer_type != 'Dense':
+            current.set_neurons(current.prev_layer.num_neurons)
+            current.y_interval = CAN_HEIGHT / (current.num_neurons + 1)
+            for i in range(current.num_neurons):
+                canvas.coords(current.layer[i].get_tag(), coords(current.x, current.y_interval * (i + 1), 25))
+            current = current.next_layer
+
+    def orient_neurons_single(self):
+        if self.layer_type != 'Dense' and self.layer_type != 'Input':
+            self.set_neurons(self.prev_layer.num_neurons)
+        self.y_interval = CAN_HEIGHT / (self.num_neurons + 1)
+        for i in range(self.num_neurons):
+            canvas.coords(self.layer[i].get_tag(), coords(self.x, self.y_interval * (i + 1), 25))
+
     # Increase the number of desired neurons by one, only called by settings menu
     def add_desired(self):
         self.desired_neurons += 1
@@ -404,6 +419,7 @@ class NeuralNetwork:
         self.input.set_neurons(2)
         self.output = Layer(OUTPUT_COLOR)
         self.input.next_layer = self.output
+        self.output.prev_layer = self.input
         self.output.layer_type = "Output"
         self.output.layer_type_var.set(self.output.layer_type)
         self.output.layer_dropdown.config(state = DISABLED)
@@ -439,7 +455,7 @@ class NeuralNetwork:
         while current is not None:
             current.x = last_x
             last_x += x_interval
-            current.orient_neurons()
+            current.orient_neurons_single()
             current = current.next_layer
 
     def save_net(self):
