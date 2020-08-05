@@ -2,7 +2,6 @@ from tkinter import *
 from tkinter import filedialog
 from tensorflow import keras
 import tkinter.ttk as ttk
-from tkinter.colorchooser import *
 import os.path
 from sklearn.datasets import make_classification
 import numpy as np
@@ -43,8 +42,13 @@ canvas.place(anchor = CENTER, relheight = .95, relwidth = 0.95, relx = 0.5, rely
 # Necessary for canvas.winfo_ATTRIBUTE to be updated, see NeuralNetwork.__init__() and Layer.orient_neurons()
 canvas.update()
 
-key_frame = Frame(canvas, bg = 'red', width = 100, height = 100)
-key_frame.pack(side = RIGHT)
+key_frame = Frame(root, width = 100, height = 100, bg = 'red')
+key_frame.place(anchor = NE, x = root.winfo_width())
+single_pixel = PhotoImage(width = 1, height = 1)
+activation_key = Frame(key_frame, width = 50, height = 50, bg = 'white')
+activation_key.grid()
+Label(activation_key, text = "Activation").grid()
+Button(activation_key, bg = ACTIVATION_COLOR, width = 15, height = 15, image = single_pixel).grid(row = 0, column = 1)
 
 # Importing images for various buttons and things
 up_arrow = PhotoImage(master = root, file = os.path.join(os.path.dirname(__file__), "Images/Up.png"))
