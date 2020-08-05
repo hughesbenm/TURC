@@ -31,7 +31,7 @@ root.minsize(WIN_WIDTH, WIN_HEIGHT)
 
 # Create and add the menu bar at the top of the window
 menu = Menu(root)
-canvas = Canvas(root, height = WIN_HEIGHT, width = WIN_WIDTH, bg = 'green')
+canvas = Canvas(root, height = WIN_HEIGHT, width = WIN_WIDTH)
 root.config(menu = menu)
 root.resizable(False, False)
 root.focus_force()
@@ -42,7 +42,7 @@ canvas.place(anchor = CENTER, relheight = .95, relwidth = 0.95, relx = 0.5, rely
 # Necessary for canvas.winfo_ATTRIBUTE to be updated, see NeuralNetwork.__init__() and Layer.orient_neurons()
 canvas.update()
 
-key_frame = Frame(root, width = 100, height = 100, bg = 'red')
+key_frame = Frame(root, width = 100, height = 100)
 key_frame.place(anchor = NE, x = root.winfo_width())
 single_pixel = PhotoImage(width = 1, height = 1)
 activation_key = Frame(key_frame, width = 50, height = 50, bg = 'white')
@@ -440,13 +440,13 @@ class NeuralNetwork:
         self.x_test = None
         self.y_test = None
 
-        self.x_train_button = Button(canvas, text = 'X_Train', command = lambda: self.prompt_data(self.x_train))
+        self.x_train_button = Button(canvas, text = 'X_Train', command = lambda: self.prompt_data(1))
         self.x_train_button.pack(side = BOTTOM)
-        self.y_train_button = Button(canvas, text = 'Y_Train', command = lambda: self.prompt_data(self.y_train))
+        self.y_train_button = Button(canvas, text = 'Y_Train', command = lambda: self.prompt_data(2))
         self.y_train_button.pack(side = BOTTOM)
-        self.x_test_button = Button(canvas, text = 'X_Test', command = lambda: self.prompt_data(self.x_test))
+        self.x_test_button = Button(canvas, text = 'X_Test', command = lambda: self.prompt_data(3))
         self.x_test_button.pack(side = BOTTOM)
-        self.y_test_button = Button(canvas, text = 'Y_Test', command = lambda: self.prompt_data(self.y_test))
+        self.y_test_button = Button(canvas, text = 'Y_Test', command = lambda: self.prompt_data(4))
         self.y_test_button.pack(side = BOTTOM)
         self.run_button = Button(canvas, text = 'Run Network', bg = MAROON, command = self.run, state = DISABLED)
         self.run_button.pack(side = BOTTOM)
@@ -534,17 +534,17 @@ class NeuralNetwork:
             except:
                 temp_data = pd.read_excel(root.filename, usecols = [0], nrows = 10)
 
-            if data is self.x_train:
+            if data == 1:
                 self.x_train = temp_data
-            elif data is self.y_train:
+            if data == 2:
                 self.y_train = temp_data
-            elif data is self.x_test:
+            if data == 3:
                 self.x_test = temp_data
-            elif data is self.y_test:
+            if data == 4:
                 self.y_test = temp_data
 
-            if self.x_train is not None and self.y_train is not None:
-                if self.x_test is not None and self.y_test is not None:
+            if self.x_test is not None and self.y_train is not None:
+                if self.x_train is not None and self.y_test is not None:
                     self.run_button.config(state = NORMAL, bg = FOREST)
         except:
             print("Nope")
