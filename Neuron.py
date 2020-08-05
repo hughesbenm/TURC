@@ -32,7 +32,7 @@ root.minsize(WIN_WIDTH, WIN_HEIGHT)
 
 # Create and add the menu bar at the top of the window
 menu = Menu(root)
-canvas = Canvas(root, height = WIN_HEIGHT, width = WIN_WIDTH)
+canvas = Canvas(root, height = WIN_HEIGHT, width = WIN_WIDTH, bg = 'green')
 root.config(menu = menu)
 root.resizable(False, False)
 root.focus_force()
@@ -42,6 +42,9 @@ canvas.place(anchor = CENTER, relheight = .95, relwidth = 0.95, relx = 0.5, rely
 
 # Necessary for canvas.winfo_ATTRIBUTE to be updated, see NeuralNetwork.__init__() and Layer.orient_neurons()
 canvas.update()
+
+key_frame = Frame(canvas, bg = 'red', width = 100, height = 100)
+key_frame.pack(side = RIGHT)
 
 # Importing images for various buttons and things
 up_arrow = PhotoImage(master = root, file = os.path.join(os.path.dirname(__file__), "Images/Up.png"))

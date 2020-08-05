@@ -20,7 +20,7 @@ MAX_WIDTH = 150
 pixels_per_unit = MAX_WIDTH / input_size[2]
 
 class Prism:
-    ANGLE = math.pi / 6
+    ANGLE = 45 / 360 * 2 * math.pi
     ANGLE_CONSTANT = math.sin(ANGLE)
 
     def __init__(self, center, input_size):
