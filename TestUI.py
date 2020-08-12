@@ -8,16 +8,18 @@ from operator import sub
 from operator import truediv
 from operator import mul
 
+seed = 21
+
 root = Tk()
 root.minsize(1200, 600)
 canvas = Canvas(root)
 canvas.place(anchor = CENTER, relheight = .95, relwidth = 0.95, relx = 0.5, rely = 0.5)
 
-input_size = (3, 3, 4)
+input_size = (32, 32, 3)
 
 MAX_WIDTH = 150
 
-pixels_per_unit = MAX_WIDTH / input_size[2]
+pixels_per_unit = MAX_WIDTH / max(input_size[0], input_size[1], input_size[2])
 
 class Prism:
     ANGLE = 45 / 360 * 2 * math.pi
@@ -51,6 +53,8 @@ class Prism:
                                          fill = 'black', outline = 'green', width = 1)
 
 
-Prism([200, 200], [4, 4, 5])
-Prism([500, 200], [3, 2, 3])
+Prism([200, 300], [3, 32, 40])
+
+
+
 root.mainloop()

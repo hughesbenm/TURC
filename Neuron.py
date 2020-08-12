@@ -46,9 +46,40 @@ key_frame = Frame(root, width = 100, height = 100)
 key_frame.place(anchor = NE, x = root.winfo_width())
 single_pixel = PhotoImage(width = 1, height = 1)
 activation_key = Frame(key_frame, width = 50, height = 50, bg = 'white')
-activation_key.grid()
-Label(activation_key, text = "Activation").grid()
-Button(activation_key, bg = ACTIVATION_COLOR, width = 15, height = 15, image = single_pixel).grid(row = 0, column = 1)
+activation_key.grid(sticky = E, pady = 3)
+Label(activation_key, text = "Activation").grid(sticky = E)
+Button(activation_key, bg = ACTIVATION_COLOR, width = 15, height = 15,
+       image = single_pixel).grid(row = 0, column = 1, sticky = E, padx = 2)
+convolution_key = Frame(key_frame, width = 50, height = 50, bg = 'white')
+convolution_key.grid(sticky = E, pady = 3)
+Label(convolution_key, text = "Convolution").grid(sticky = E)
+Button(convolution_key, bg = CONVOLUTIONAL_COLOR, width = 15, height = 15,
+       image = single_pixel).grid(row = 0, column = 1, sticky = E, padx = 2)
+dense_key = Frame(key_frame, width = 50, height = 50, bg = 'white')
+dense_key.grid(sticky = E, pady = 3)
+Label(dense_key, text = "Dense").grid(sticky = E)
+Button(dense_key, bg = DENSE_COLOR, width = 15, height = 15,
+       image = single_pixel).grid(row = 0, column = 1, sticky = E, padx = 2)
+dropout_key = Frame(key_frame, width = 50, height = 50, bg = 'white')
+dropout_key.grid(sticky = E, pady = 3)
+Label(dropout_key, text = "Dropout").grid(sticky = E)
+Button(dropout_key, bg = DROPOUT_COLOR, width = 15, height = 15,
+       image = single_pixel).grid(row = 0, column = 1, sticky = E, padx = 2)
+flatten_key = Frame(key_frame, width = 50, height = 50, bg = 'white')
+flatten_key.grid(sticky = E, pady = 3)
+Label(flatten_key, text = "Flatten").grid(sticky = E)
+Button(flatten_key, bg = FLATTEN_COLOR, width = 15, height = 15,
+       image = single_pixel).grid(row = 0, column = 1, sticky = E, padx = 2)
+normalization_key = Frame(key_frame, width = 50, height = 50, bg = 'white')
+normalization_key.grid(sticky = E, pady = 3)
+Label(normalization_key, text = "Normalization").grid(sticky = E)
+Button(normalization_key, bg = NORMALIZATION_COLOR, width = 15, height = 15,
+       image = single_pixel).grid(row = 0, column = 1, sticky = E, padx = 2)
+pooling_key = Frame(key_frame, width = 50, height = 50, bg = 'white')
+pooling_key.grid(sticky = E, pady = 3)
+Label(pooling_key, text = "Pooling").grid(sticky = E)
+Button(pooling_key, bg = POOLING_COLOR, width = 15, height = 15,
+       image = single_pixel).grid(row = 0, column = 1, sticky = E, padx = 2)
 
 # Importing images for various buttons and things
 up_arrow = PhotoImage(master = root, file = os.path.join(os.path.dirname(__file__), "Images/Up.png"))
@@ -336,13 +367,10 @@ class Layer:
 
     # Spread the neurons evenly throughout the layer
     def orient_neurons(self):
-        self.y_interval = CAN_HEIGHT / (self.num_neurons + 1)
-        for i in range(self.num_neurons):
-            canvas.coords(self.layer[i].get_tag(), coords(self.x, self.y_interval * (i + 1), 25))
-
-        current = self.next_layer
-        while current is not None and current.layer_type != 'Dense':
-            current.set_neurons(current.prev_layer.num_neurons)
+        current = self
+        while current is not None and current.layer_type != 'Input':
+            if current.layer_type != 'Dense':
+                current.set_neurons(current.prev_layer.num_neurons)
             current.y_interval = CAN_HEIGHT / (current.num_neurons + 1)
             for i in range(current.num_neurons):
                 canvas.coords(current.layer[i].get_tag(), coords(current.x, current.y_interval * (i + 1), 25))
@@ -452,6 +480,7 @@ class NeuralNetwork:
         self.run_button.pack(side = BOTTOM)
         Button(canvas, text = 'load', command = self.load_net).pack(side = TOP)
         Button(canvas, text = 'save', command = self.save_net).pack(side = TOP)
+        Button(canvas, text = 'clear', command = self.clear_net).pack(side = TOP)
 
         self.orient_network()
 
@@ -488,7 +517,7 @@ class NeuralNetwork:
             for i in range(len(layer_details)):
                 new = Layer(layer_details[i][0])
                 new.layer_type = layer_details[i][1]
-                new.desired_neurons = layer_details[i][2]
+                new.desired_neurons = int(layer_details[i][2])
                 new.set_neurons(new.desired_neurons)
                 new.function = layer_details[i][3]
                 new.use_bias_bool = layer_details[i][4]
@@ -506,6 +535,13 @@ class NeuralNetwork:
             self.orient_network()
         except FileNotFoundError:
             pass
+
+    def clear_net(self):
+        self.erase_hidden()
+        self.input.next_layer = self.output
+        self.output.prev_layer = self.input
+        self.num_layers = 2
+        self.orient_network()
 
     # Increase the number of hidden layers by one
     def add_layer(self, index, new = None):
