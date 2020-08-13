@@ -48,37 +48,37 @@ single_pixel = PhotoImage(width = 1, height = 1)
 activation_key = Frame(key_frame, width = 50, height = 50, bg = 'white')
 activation_key.grid(sticky = E, pady = 3)
 Label(activation_key, text = "Activation").grid(sticky = E)
-Button(activation_key, bg = ACTIVATION_COLOR, width = 15, height = 15,
+Button(activation_key, bg = ACTIVATION_COLOR, width = 15, height = 15, state = DISABLED,
        image = single_pixel).grid(row = 0, column = 1, sticky = E, padx = 2)
 convolution_key = Frame(key_frame, width = 50, height = 50, bg = 'white')
 convolution_key.grid(sticky = E, pady = 3)
 Label(convolution_key, text = "Convolution").grid(sticky = E)
-Button(convolution_key, bg = CONVOLUTIONAL_COLOR, width = 15, height = 15,
+Button(convolution_key, bg = CONVOLUTIONAL_COLOR, width = 15, height = 15, state = DISABLED,
        image = single_pixel).grid(row = 0, column = 1, sticky = E, padx = 2)
 dense_key = Frame(key_frame, width = 50, height = 50, bg = 'white')
 dense_key.grid(sticky = E, pady = 3)
 Label(dense_key, text = "Dense").grid(sticky = E)
-Button(dense_key, bg = DENSE_COLOR, width = 15, height = 15,
+Button(dense_key, bg = DENSE_COLOR, width = 15, height = 15, state = DISABLED,
        image = single_pixel).grid(row = 0, column = 1, sticky = E, padx = 2)
 dropout_key = Frame(key_frame, width = 50, height = 50, bg = 'white')
 dropout_key.grid(sticky = E, pady = 3)
 Label(dropout_key, text = "Dropout").grid(sticky = E)
-Button(dropout_key, bg = DROPOUT_COLOR, width = 15, height = 15,
+Button(dropout_key, bg = DROPOUT_COLOR, width = 15, height = 15, state = DISABLED,
        image = single_pixel).grid(row = 0, column = 1, sticky = E, padx = 2)
 flatten_key = Frame(key_frame, width = 50, height = 50, bg = 'white')
 flatten_key.grid(sticky = E, pady = 3)
 Label(flatten_key, text = "Flatten").grid(sticky = E)
-Button(flatten_key, bg = FLATTEN_COLOR, width = 15, height = 15,
+Button(flatten_key, bg = FLATTEN_COLOR, width = 15, height = 15, state = DISABLED,
        image = single_pixel).grid(row = 0, column = 1, sticky = E, padx = 2)
 normalization_key = Frame(key_frame, width = 50, height = 50, bg = 'white')
 normalization_key.grid(sticky = E, pady = 3)
 Label(normalization_key, text = "Normalization").grid(sticky = E)
-Button(normalization_key, bg = NORMALIZATION_COLOR, width = 15, height = 15,
+Button(normalization_key, bg = NORMALIZATION_COLOR, width = 15, height = 15, state = DISABLED,
        image = single_pixel).grid(row = 0, column = 1, sticky = E, padx = 2)
 pooling_key = Frame(key_frame, width = 50, height = 50, bg = 'white')
 pooling_key.grid(sticky = E, pady = 3)
 Label(pooling_key, text = "Pooling").grid(sticky = E)
-Button(pooling_key, bg = POOLING_COLOR, width = 15, height = 15,
+Button(pooling_key, bg = POOLING_COLOR, width = 15, height = 15, state = DISABLED,
        image = single_pixel).grid(row = 0, column = 1, sticky = E, padx = 2)
 
 # Importing images for various buttons and things
