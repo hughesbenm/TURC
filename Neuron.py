@@ -32,7 +32,6 @@ root.minsize(WIN_WIDTH, WIN_HEIGHT)
 # Create and add the menu bar at the top of the window
 menu = Menu(root)
 canvas = Canvas(root, height = WIN_HEIGHT, width = WIN_WIDTH)
-root.config(menu = menu)
 root.resizable(False, False)
 root.focus_force()
 
@@ -628,5 +627,9 @@ class NeuralNetwork:
 
 
 app = NeuralNetwork()
+menu.add_command(label = "Clear", command = app.clear_net)
+menu.add_command(label = "Save", command = app.save_net)
+menu.add_command(label = "Load", command = app.load_net)
+root.config(menu = menu)
 Button(canvas, text = 'add hidden layer', command = lambda: app.add_layer(app.num_layers - 1)).pack(side = BOTTOM)
 root.mainloop()
