@@ -44,7 +44,7 @@ canvas.update()
 key_frame = Frame(root, width = 100, height = 100)
 key_frame.place(anchor = NE, x = root.winfo_width())
 single_pixel = PhotoImage(width = 1, height = 1)
-activation_key = Frame(key_frame, width = 50, height = 50, bg = 'white')
+activation_key = Frame(key_frame, width = 50, height = 50)
 activation_key.grid(sticky = E, pady = 3)
 Label(activation_key, text = "Activation").grid(sticky = E)
 Button(activation_key, bg = ACTIVATION_COLOR, width = 15, height = 15, state = DISABLED,
@@ -130,15 +130,6 @@ class Layer:
         self.color = color
         self.layer = [Neuron(self.color, self.x, self.y_interval, 25)]
         self.num_neurons = 1
-        self.desired_neurons = 1
-        self.layer_type = LAYERS[0]     # Activation
-        self.desired_type = self.layer_type
-        self.function = FUNCTIONS[0]    # Linear
-        self.bias_type = INITIALIZERS[0]     # Zeros
-        self.use_bias_bool = True
-        self.dropout_rate = 0.25
-        self.desired_rate = self.dropout_rate
-        self.desired_function = self.function
         canvas.tag_bind(self.layer[0].get_tag(), '<Button-3>', self.open_settings)
         self.settings = Toplevel()
         self.settings.protocol('WM_DELETE_WINDOW', self.close_layer)
@@ -150,6 +141,8 @@ class Layer:
         self.sett_frame.pack(expand = True, fill = BOTH)
 
         # Layer type
+        self.layer_type = LAYERS[0]     # Activation
+        self.desired_type = self.layer_type
         self.layer_type_frame = Frame(self.sett_frame)
         self.layer_type_label = Label(self.layer_type_frame, text = 'Layer Type')
         self.layer_type_var = StringVar(self.sett_frame)
@@ -161,6 +154,7 @@ class Layer:
         self.layer_dropdown.grid(row = 1, column = 0, padx = 7, sticky = W)
 
         # Number of Neurons: Dense
+        self.desired_neurons = 1
         def check_num_neuron_entry(inp):
             if (inp.isdigit() and inp != '0') or inp == '':
                 return True
@@ -171,9 +165,9 @@ class Layer:
         self.num_neurons_label = Label(self.num_neurons_frame, text = 'Number of Neurons')
         self.num_neurons_var = IntVar(self.settings, self.desired_neurons)
         self.add_neuron_arrow = Button(self.num_neurons_frame, image = up_arrow, height = 10,
-                                       command = self.add_desired)
+                                       command = self.add_desired_neuron)
         self.subtract_neuron_arrow = Button(self.num_neurons_frame, image = down_arrow, height = 10,
-                                            command = self.subtract_desired)
+                                            command = self.subtract_desired_neuron)
         self.num_neurons_entry = Entry(self.num_neurons_frame, textvariable = self.num_neurons_var, width = 9,
                                        validate = 'key', validatecommand = (num_reg, '%P'))
         self.num_neurons_label.grid(row = 0, column = 0, columnspan = 3, sticky = W)
@@ -183,6 +177,8 @@ class Layer:
         self.num_neurons_frame.columnconfigure(2, weight = 1)
 
         # Activation Function: Activation/Dense
+        self.function = FUNCTIONS[0]    # Linear
+        self.desired_function = self.function
         self.function_frame = Frame(self.sett_frame)
         self.function_var = StringVar(self.sett_frame)
         self.function_var.set(self.function)
@@ -192,7 +188,8 @@ class Layer:
         self.function_label.grid(row = 0, column = 0, sticky = W)
         self.function_dropdown.grid(row = 1, column = 0, padx = 7, sticky = W)
 
-        # Bias Check Mark: Dense
+        # Bias Check Mark: Dense/Convolution
+        self.use_bias_bool = True
         self.bias_check_frame = Frame(self.sett_frame)
         self.use_bias_label = Label(self.bias_check_frame, text = 'Use Bias')
         self.use_bias_var = BooleanVar(self.bias_check_frame)
@@ -202,7 +199,8 @@ class Layer:
         self.use_bias_label.grid(row = 0, column = 0, sticky = W)
         self.bias_check.grid(row = 1, column = 0, padx = 7, sticky = W)
 
-        # Bias Initializer: Dense
+        # Bias Initializer: Dense/Convolution
+        self.bias_type = INITIALIZERS[0]     # Zeros
         self.bias_initializer_frame = Frame(self.sett_frame)
         self.bias_var = StringVar(self.sett_frame)
         self.bias_var.set(self.bias_type)
@@ -212,10 +210,56 @@ class Layer:
         self.bias_label.grid(row = 0, column = 0, sticky = W)
         self.bias_dropdown.grid(row = 1, column = 0, padx = 7, sticky = W)
 
+        # Convolution Dimensions: Convolution
+        self.conv_dimensions = 1
+        self.conv_dimensions_frame = Frame(self.sett_frame)
+        self.conv_dimensions_var = IntVar(self.sett_frame)
+        Label(self.conv_dimensions_frame, text = "Dimensionality").grid(columnspan = 3, sticky = W)
+        Radiobutton(self.conv_dimensions_frame, text = "1D", variable = self.conv_dimensions_var, value = 1).grid(
+            column = 0, row = 1)
+        Radiobutton(self.conv_dimensions_frame, text = "2D", variable = self.conv_dimensions_var, value = 2).grid(
+            column = 1, row = 1)
+        Radiobutton(self.conv_dimensions_frame, text = "3D", variable = self.conv_dimensions_var, value = 3).grid(
+            column = 2, row = 1)
+        self.conv_dimensions_var.set(2)
+
+        # Number of Filters: Convolution
+        def check_num_filters_entry(inp):
+            if (inp.isdigit() and inp != '0') or inp == '':
+                return True
+            else:
+                return False
+        self.desired_filters = 1
+        self.num_filters = 1
+        self.num_filters_frame = Frame(self.sett_frame)
+        filters_reg = self.settings.register(check_num_neuron_entry)
+        self.num_filters_label = Label(self.num_filters_frame, text = 'Number of Filters')
+        self.num_filters_var = IntVar(self.settings, self.desired_filters)
+        self.add_filter_arrow = Button(self.num_filters_frame, image = up_arrow, height = 10,
+                                       command = self.add_desired_filter)
+        self.subtract_filter_arrow = Button(self.num_filters_frame, image = down_arrow, height = 10,
+                                            command = self.subtract_desired_filter)
+        self.num_filters_entry = Entry(self.num_filters_frame, textvariable = self.num_filters_var, width = 9,
+                                       validate = 'key', validatecommand = (filters_reg, '%P'))
+        self.num_filters_label.grid(row = 0, column = 0, columnspan = 3, sticky = W)
+        self.num_filters_entry.grid(row = 1, column = 1, rowspan = 2)
+        self.add_filter_arrow.grid(row = 1, column = 0, padx = 7, sticky = W)
+        self.subtract_filter_arrow.grid(row = 2, column = 0, padx = 7, sticky = W)
+        self.num_filters_frame.columnconfigure(2, weight = 1)
+
+        # Kernal Size: Convolution
+        self.kernel_size = 1
+        self.kernel_size_frame = Frame(self.sett_frame)
+
         # Pooling Type: Pooling
         self.pooling_type_frame = Frame(self.sett_frame)
 
+        # Padding: Convolution
+        self.padding_frame = Frame(self.sett_frame)
+
         # Rate: Dropout
+        self.dropout_rate = 0.25
+        self.desired_rate = self.dropout_rate
         def check_dropout_entry(inp):
 
             if inp == '':
@@ -267,6 +311,8 @@ class Layer:
             self.dropout_rate_var.set(self.desired_rate)
         if self.num_neurons_entry.get() == '':
             self.num_neurons_var.set(self.desired_neurons)
+        if self.num_filters_entry.get() == '':
+            self.num_filters_var.set(self.desired_filters)
         self.layer_type = self.desired_type
         self.function = self.function_var.get()
         self.use_bias_bool = self.use_bias_var.get()
@@ -305,7 +351,20 @@ class Layer:
             self.function_frame.grid(row = 2, column = 0, sticky = W)
 
         elif self.desired_type == 'Convolutional':
-            pass
+            self.conv_dimensions_frame.grid(row = 2, column = 0, sticky = W)
+
+            self.num_filters_frame.grid(row = 2, column = 1, sticky = W)
+
+            self.kernel_size_frame.grid(row = 3, column = 0, sticky = W)
+
+            self.padding_frame.grid(row = 3, column = 1, sticky = W)
+
+            self.bias_check_frame.grid(row = 4, column = 0, sticky = W)
+
+            self.bias_initializer_frame.grid(row = 4, column = 1, sticky = W)
+
+            self.function_frame.grid(row = 5, column = 0, sticky = W)
+
         elif self.desired_type == 'Dense':
             self.num_neurons_frame.grid(row = 2, column = 0, sticky = W)
 
@@ -383,16 +442,27 @@ class Layer:
             canvas.coords(self.layer[i].get_tag(), coords(self.x, self.y_interval * (i + 1), 25))
 
     # Increase the number of desired neurons by one, only called by settings menu
-    def add_desired(self):
+    def add_desired_neuron(self):
         self.desired_neurons += 1
         self.num_neurons_var.set(self.desired_neurons)
 
     # Decrease the number of desired neurons by one, only called by settings menu, bounce back up to 1 if below 0
-    def subtract_desired(self):
+    def subtract_desired_neuron(self):
         self.desired_neurons -= 1
         if self.desired_neurons <= 0:
             self.desired_neurons = 1
         self.num_neurons_var.set(self.desired_neurons)
+
+    def add_desired_filter(self):
+        self.desired_filters += 1
+        self.num_filters_var.set(self.desired_filters)
+
+    def subtract_desired_filter(self):
+        self.desired_filters -= 1
+        if self.desired_filters <= 0:
+            self.desired_filters = 1
+        self.num_filters_var.set(self.desired_filters)
+
 
     def increase_dropout_rate(self, rate = 0.05):
         self.desired_rate += rate
@@ -477,9 +547,6 @@ class NeuralNetwork:
         self.y_test_button.pack(side = BOTTOM)
         self.run_button = Button(canvas, text = 'Run Network', bg = MAROON, command = self.run, state = DISABLED)
         self.run_button.pack(side = BOTTOM)
-        Button(canvas, text = 'load', command = self.load_net).pack(side = TOP)
-        Button(canvas, text = 'save', command = self.save_net).pack(side = TOP)
-        Button(canvas, text = 'clear', command = self.clear_net).pack(side = TOP)
 
         self.orient_network()
 
