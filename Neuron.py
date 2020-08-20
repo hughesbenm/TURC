@@ -4,6 +4,8 @@ from tensorflow import keras
 import tkinter.ttk as ttk
 import os.path
 from sklearn.datasets import make_classification
+import scikitplot as skplt
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
@@ -30,7 +32,6 @@ root = Tk()
 root.minsize(WIN_WIDTH, WIN_HEIGHT)
 
 # Create and add the menu bar at the top of the window
-menu = Menu(root)
 canvas = Canvas(root, height = WIN_HEIGHT, width = WIN_WIDTH)
 root.resizable(False, False)
 root.focus_force()
@@ -463,7 +464,6 @@ class Layer:
             self.desired_filters = 1
         self.num_filters_var.set(self.desired_filters)
 
-
     def increase_dropout_rate(self, rate = 0.05):
         self.desired_rate += rate
         if self.desired_rate >= 1.0:
@@ -537,16 +537,23 @@ class NeuralNetwork:
         self.x_test = None
         self.y_test = None
 
-        self.x_train_button = Button(canvas, text = 'X_Train', command = lambda: self.prompt_data(1))
-        self.x_train_button.pack(side = BOTTOM)
-        self.y_train_button = Button(canvas, text = 'Y_Train', command = lambda: self.prompt_data(2))
-        self.y_train_button.pack(side = BOTTOM)
-        self.x_test_button = Button(canvas, text = 'X_Test', command = lambda: self.prompt_data(3))
-        self.x_test_button.pack(side = BOTTOM)
-        self.y_test_button = Button(canvas, text = 'Y_Test', command = lambda: self.prompt_data(4))
-        self.y_test_button.pack(side = BOTTOM)
-        self.run_button = Button(canvas, text = 'Run Network', bg = MAROON, command = self.run, state = DISABLED)
-        self.run_button.pack(side = BOTTOM)
+        self.data_menu = Menu(root, tearoff = 0)
+        self.data_menu.add_command(label = "X Train", command = lambda: self.prompt_data(1))
+        self.data_menu.add_command(label = "Y Train", command = lambda: self.prompt_data(2))
+        self.data_menu.add_command(label = "X Test", command = lambda: self.prompt_data(3))
+        self.data_menu.add_command(label = "Y Test", command = lambda: self.prompt_data(4))
+
+        self.save_menu = Menu(root, tearoff = 0)
+        self.save_menu.add_command(label = "Save Net", command = self.save_net)
+
+        self.menu = Menu(root)
+        self.menu.add_command(label = "Clear", command = self.clear_net)
+        self.menu.add_cascade(label = "Save", menu = self.save_menu)
+        self.menu.add_command(label = "Load", command = self.load_net)
+        self.menu.add_cascade(label = "Data", menu = self.data_menu)
+        self.menu.add_command(label = "Run", command = self.run)
+        self.menu.entryconfig(5, state = DISABLED)
+        root.config(menu = self.menu)
 
         self.orient_network()
 
@@ -571,6 +578,7 @@ class NeuralNetwork:
         np.savez("saves.npz", net_details = net_details, layer_details = layer_details)
 
     def load_net(self):
+        print(self.x_train)
         self.erase_hidden()
         self.input.next_layer = self.output
         self.output.prev_layer = self.output
@@ -578,6 +586,10 @@ class NeuralNetwork:
         try:
             saves = np.load("saves.npz", allow_pickle = True)
             net_details = saves['net_details']
+            self.x_train = net_details[0]
+            self.y_train = net_details[1]
+            self.x_test = net_details[2]
+            self.y_test = net_details[3]
             layer_details = saves['layer_details']
             current = self.input
             for i in range(len(layer_details)):
@@ -601,6 +613,7 @@ class NeuralNetwork:
             self.orient_network()
         except FileNotFoundError:
             pass
+        print(self.x_train)
 
     def clear_net(self):
         self.erase_hidden()
@@ -625,6 +638,8 @@ class NeuralNetwork:
         canvas.update()
 
     def prompt_data(self, data):
+        prompt = Toplevel(root)
+
         root.filename = filedialog.askopenfilename(initialdir = os.path.dirname(__file__), title = "Select File",
                                                    filetypes = [('All valid files',
                                                                  '*.xls;*.xlsx;*.xlsm;*.xlsb;*.odf;*.csv'),
@@ -634,7 +649,7 @@ class NeuralNetwork:
             try:
                 temp_data = pd.read_csv(root.filename, sep = ',', header = None)
             except:
-                temp_data = pd.read_excel(root.filename, usecols = [0], nrows = 10)
+                temp_data = pd.read_excel(root.filename, nrows = 1000, header = None)
 
             if data == 1:
                 self.x_train = temp_data
@@ -647,7 +662,7 @@ class NeuralNetwork:
 
             if self.x_test is not None and self.y_train is not None:
                 if self.x_train is not None and self.y_test is not None:
-                    self.run_button.config(state = NORMAL, bg = FOREST)
+                    self.menu.entryconfig(5, state = NORMAL)
         except:
             print("Nope")
 
@@ -693,10 +708,12 @@ class NeuralNetwork:
             current = current.next_layer
 
 
+# x, y = make_classification(n_samples=1000, n_features=2, n_redundant=0,
+#                            n_informative=2, random_state=7, n_clusters_per_class=1)
+# plt.scatter(x[:, 0], x[:, 1], marker= 'o', c=Y,
+#             s=25, edgecolor='k')
+# plt.show()
+
 app = NeuralNetwork()
-menu.add_command(label = "Clear", command = app.clear_net)
-menu.add_command(label = "Save", command = app.save_net)
-menu.add_command(label = "Load", command = app.load_net)
-root.config(menu = menu)
 Button(canvas, text = 'add hidden layer', command = lambda: app.add_layer(app.num_layers - 1)).pack(side = BOTTOM)
 root.mainloop()
