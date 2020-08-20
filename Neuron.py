@@ -4,8 +4,6 @@ from tensorflow import keras
 import tkinter.ttk as ttk
 import os.path
 from sklearn.datasets import make_classification
-import scikitplot as skplt
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
@@ -538,10 +536,10 @@ class NeuralNetwork:
         self.y_test = None
 
         self.data_menu = Menu(root, tearoff = 0)
-        self.data_menu.add_command(label = "X Train", command = lambda: self.prompt_data(1))
-        self.data_menu.add_command(label = "Y Train", command = lambda: self.prompt_data(2))
-        self.data_menu.add_command(label = "X Test", command = lambda: self.prompt_data(3))
-        self.data_menu.add_command(label = "Y Test", command = lambda: self.prompt_data(4))
+        self.data_menu.add_command(label = "X Train", command = lambda: self.prompt_data("X Train"))
+        self.data_menu.add_command(label = "Y Train", command = lambda: self.prompt_data("Y Train"))
+        self.data_menu.add_command(label = "X Test", command = lambda: self.prompt_data("X Test"))
+        self.data_menu.add_command(label = "Y Test", command = lambda: self.prompt_data("Y Test"))
 
         self.save_menu = Menu(root, tearoff = 0)
         self.save_menu.add_command(label = "Save Net", command = self.save_net)
@@ -637,9 +635,7 @@ class NeuralNetwork:
         self.orient_network()
         canvas.update()
 
-    def prompt_data(self, data):
-        prompt = Toplevel(root)
-
+    def choose_file(self, data, num_rows, num_columns):
         root.filename = filedialog.askopenfilename(initialdir = os.path.dirname(__file__), title = "Select File",
                                                    filetypes = [('All valid files',
                                                                  '*.xls;*.xlsx;*.xlsm;*.xlsb;*.odf;*.csv'),
@@ -649,15 +645,15 @@ class NeuralNetwork:
             try:
                 temp_data = pd.read_csv(root.filename, sep = ',', header = None)
             except:
-                temp_data = pd.read_excel(root.filename, nrows = 1000, header = None)
+                temp_data = pd.read_excel(root.filename, usecols = [num_columns], nrows = num_rows, header = None)
 
-            if data == 1:
+            if data == "X Train":
                 self.x_train = temp_data
-            if data == 2:
+            if data == "Y Train":
                 self.y_train = temp_data
-            if data == 3:
+            if data == "X Test":
                 self.x_test = temp_data
-            if data == 4:
+            if data == "Y Test":
                 self.y_test = temp_data
 
             if self.x_test is not None and self.y_train is not None:
@@ -665,6 +661,36 @@ class NeuralNetwork:
                     self.menu.entryconfig(5, state = NORMAL)
         except:
             print("Nope")
+
+    def prompt_data(self, data):
+        prompt = Toplevel(root)
+        prompt.title(data)
+        data_var = StringVar()
+        rows_var = StringVar()
+        rows_var.set("0")
+        columns_var = StringVar()
+        columns_var.set("0")
+
+        def data_trace(*args):
+            rows = rows_var.get()
+            if rows == '':
+                rows = '0'
+            columns = columns_var.get()
+            if columns == '':
+                columns = '0'
+
+            data_var.set(rows + ' x ' + columns)
+
+        rows_var.trace("w", data_trace)
+        columns_var.trace("w", data_trace)
+        Label(prompt, text = "Rows").grid(row = 0, column = 0)
+        Entry(prompt, textvariable = rows_var).grid(row = 0, column = 1)
+        Label(prompt, text = "Columns").grid(row = 1, column = 0)
+        Entry(prompt, textvariable = columns_var).grid(row = 1, column = 1)
+        data_var.set(rows_var.get() + " x " + columns_var.get())
+        Label(prompt, textvariable = data_var).grid()
+        Button(prompt, text = "Choose File", command = lambda: self.choose_file(data, int(rows_var.get()),
+                                                                                int(columns_var.get()))).grid()
 
     def compile_network(self):
         current = self.input.next_layer
