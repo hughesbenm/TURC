@@ -118,6 +118,14 @@ class Neuron:
         canvas.move(self.node, x, 0)
 
 
+class Input:
+    def __init__(self):
+        self.file_name = 'File Not Selected'
+        self.file_path = None
+        self.data = None
+        self.num_rows = 0
+        self.num_columns = 0
+
 # Collection of Neurons
 class Layer:
     # default constructor, each Layer starts with a single neuron
@@ -474,12 +482,6 @@ class Layer:
             self.desired_rate = 0.0
         self.dropout_rate_var.set(round(self.desired_rate, 2))
 
-    def get_x(self):
-        return self.x
-
-    def set_x(self, x):
-        self.x = x
-
     def move_forward_x(self):
         for i in self.layer:
             i.move_x(50)
@@ -530,16 +532,16 @@ class NeuralNetwork:
         self.hidden_desired = 1
 
         self.net_model = keras.Sequential()
-        self.x_train = None
-        self.y_train = None
-        self.x_test = None
-        self.y_test = None
+        self.x_train = Input()
+        self.y_train = Input()
+        self.x_test = Input()
+        self.y_test = Input()
 
         self.data_menu = Menu(root, tearoff = 0)
-        self.data_menu.add_command(label = "X Train", command = lambda: self.prompt_data("X Train"))
-        self.data_menu.add_command(label = "Y Train", command = lambda: self.prompt_data("Y Train"))
-        self.data_menu.add_command(label = "X Test", command = lambda: self.prompt_data("X Test"))
-        self.data_menu.add_command(label = "Y Test", command = lambda: self.prompt_data("Y Test"))
+        self.data_menu.add_command(label = "X Train", command = lambda: self.prompt_data(self.x_train))
+        self.data_menu.add_command(label = "Y Train", command = lambda: self.prompt_data(self.y_train))
+        self.data_menu.add_command(label = "X Test", command = lambda: self.prompt_data(self.x_test))
+        self.data_menu.add_command(label = "Y Test", command = lambda: self.prompt_data(self.y_test))
 
         self.save_menu = Menu(root, tearoff = 0)
         self.save_menu.add_command(label = "Save Net", command = self.save_net)
@@ -576,7 +578,6 @@ class NeuralNetwork:
         np.savez("saves.npz", net_details = net_details, layer_details = layer_details)
 
     def load_net(self):
-        print(self.x_train)
         self.erase_hidden()
         self.input.next_layer = self.output
         self.output.prev_layer = self.output
@@ -588,6 +589,11 @@ class NeuralNetwork:
             self.y_train = net_details[1]
             self.x_test = net_details[2]
             self.y_test = net_details[3]
+
+            if self.x_test.data is not None and self.y_train.data is not None:
+                if self.x_train.data is not None and self.y_test.data is not None:
+                    self.menu.entryconfig(5, state = NORMAL)
+
             layer_details = saves['layer_details']
             current = self.input
             for i in range(len(layer_details)):
@@ -611,7 +617,6 @@ class NeuralNetwork:
             self.orient_network()
         except FileNotFoundError:
             pass
-        print(self.x_train)
 
     def clear_net(self):
         self.erase_hidden()
@@ -635,32 +640,41 @@ class NeuralNetwork:
         self.orient_network()
         canvas.update()
 
-    def choose_file(self, data, num_rows, num_columns):
-        root.filename = filedialog.askopenfilename(initialdir = os.path.dirname(__file__), title = "Select File",
+    def choose_file(self, data, num_rows, num_columns, file_var, prompt):
+        temp_file = filedialog.askopenfilename(initialdir = os.path.dirname(__file__), title = "Select File",
                                                    filetypes = [('All valid files',
                                                                  '*.xls;*.xlsx;*.xlsm;*.xlsb;*.odf;*.csv'),
                                                                 ('Excel files', '*.xls;*.xlsx;*.xlsm;*.xlsb;*.odf'),
                                                                 ('CSV files', '*.csv')])
+        prompt.focus_force()
+        # try:
         try:
-            try:
-                temp_data = pd.read_csv(root.filename, sep = ',', header = None)
-            except:
-                temp_data = pd.read_excel(root.filename, usecols = [num_columns], nrows = num_rows, header = None)
-
-            if data == "X Train":
-                self.x_train = temp_data
-            if data == "Y Train":
-                self.y_train = temp_data
-            if data == "X Test":
-                self.x_test = temp_data
-            if data == "Y Test":
-                self.y_test = temp_data
-
-            if self.x_test is not None and self.y_train is not None:
-                if self.x_train is not None and self.y_test is not None:
-                    self.menu.entryconfig(5, state = NORMAL)
+            temp_data = pd.read_csv(temp_file, sep = ',', header = None)
         except:
-            print("Nope")
+            temp_data = pd.read_excel(temp_file, usecols = [num_columns], nrows = num_rows, header = None)
+
+        data.data = temp_data
+        data.file_path = temp_file
+        data.file_name = os.path.basename(temp_file)
+        file_var.set(data.file_name)
+        # if data == "X Train":
+        #     self.x_train = temp_data
+        #     self.x_train_file = temp_filename
+        # if data == "Y Train":
+        #     self.y_train = temp_data
+        #     self.y_train_file = temp_filename
+        # if data == "X Test":
+        #     self.x_test = temp_data
+        #     self.x_test_file = temp_filename
+        # if data == "Y Test":
+        #     self.y_test = temp_data
+        #     self.y_test_file = temp_filename
+
+        if self.x_test.data is not None and self.y_train.data is not None:
+            if self.x_train.data is not None and self.y_test.data is not None:
+                self.menu.entryconfig(5, state = NORMAL)
+        # except:
+        #     print("Nope")
 
     def prompt_data(self, data):
         prompt = Toplevel(root)
@@ -670,6 +684,8 @@ class NeuralNetwork:
         rows_var.set("0")
         columns_var = StringVar()
         columns_var.set("0")
+        file_var = StringVar()
+        file_var.set(data.file_name)
 
         def data_trace(*args):
             rows = rows_var.get()
@@ -690,7 +706,8 @@ class NeuralNetwork:
         data_var.set(rows_var.get() + " x " + columns_var.get())
         Label(prompt, textvariable = data_var).grid()
         Button(prompt, text = "Choose File", command = lambda: self.choose_file(data, int(rows_var.get()),
-                                                                                int(columns_var.get()))).grid()
+                                                                                int(columns_var.get()), file_var, prompt)).grid()
+        Label(prompt, textvariable = file_var).grid()
 
     def compile_network(self):
         current = self.input.next_layer
