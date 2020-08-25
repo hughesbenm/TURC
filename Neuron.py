@@ -84,7 +84,7 @@ up_arrow = PhotoImage(master = root, file = os.path.join(os.path.dirname(__file_
 down_arrow = PhotoImage(master = root, file = os.path.join(os.path.dirname(__file__), "Images/Down.png"))
 
 # Constants for the keras side of things
-FUNCTIONS = [None, 'elu', 'exponential', 'relu', 'selu', 'sigmoid', 'softmax', 'softplus', 'softsign', 'tanh']
+FUNCTIONS = ['elu', 'exponential', 'linear', 'relu', 'selu', 'sigmoid', 'softmax', 'softplus', 'softsign', 'tanh']
 
 LAYERS = ['Activation', 'Convolutional', 'Dense', 'Dropout', 'Flatten', 'Normalization', 'Pooling']
 
@@ -162,6 +162,7 @@ class Layer:
 
         # Number of Neurons: Dense
         self.desired_neurons = 1
+
         def check_num_neuron_entry(inp):
             if (inp.isdigit() and inp != '0') or inp == '':
                 return True
@@ -184,7 +185,7 @@ class Layer:
         self.num_neurons_frame.columnconfigure(2, weight = 1)
 
         # Activation Function: Activation/Dense
-        self.function = FUNCTIONS[0]    # Linear
+        self.function = 'linear'    # Linear
         self.desired_function = self.function
         self.function_frame = Frame(self.sett_frame)
         self.function_var = StringVar(self.sett_frame)
@@ -641,40 +642,31 @@ class NeuralNetwork:
         canvas.update()
 
     def choose_file(self, data, num_rows, num_columns, file_var, prompt):
+        temp_data = None
         temp_file = filedialog.askopenfilename(initialdir = os.path.dirname(__file__), title = "Select File",
                                                    filetypes = [('All valid files',
                                                                  '*.xls;*.xlsx;*.xlsm;*.xlsb;*.odf;*.csv'),
                                                                 ('Excel files', '*.xls;*.xlsx;*.xlsm;*.xlsb;*.odf'),
                                                                 ('CSV files', '*.csv')])
         prompt.focus_force()
-        # try:
         try:
-            temp_data = pd.read_csv(temp_file, sep = ',', header = None)
+            try:
+                temp_data = pd.read_csv(temp_file, sep = ',', header = None)
+            except:
+                temp_data = pd.read_excel(temp_file, usecols = range(0, num_columns), nrows = num_rows, header = None)
+
+            data.data = temp_data
+            data.file_path = temp_file
+            data.file_name = os.path.basename(temp_file)
+            file_var.set(data.file_name)
+
+            if self.x_test.data is not None and self.y_train.data is not None:
+                if self.x_train.data is not None and self.y_test.data is not None:
+                    self.menu.entryconfig(5, state = NORMAL)
         except:
-            temp_data = pd.read_excel(temp_file, usecols = [num_columns], nrows = num_rows, header = None)
-
-        data.data = temp_data
-        data.file_path = temp_file
-        data.file_name = os.path.basename(temp_file)
-        file_var.set(data.file_name)
-        # if data == "X Train":
-        #     self.x_train = temp_data
-        #     self.x_train_file = temp_filename
-        # if data == "Y Train":
-        #     self.y_train = temp_data
-        #     self.y_train_file = temp_filename
-        # if data == "X Test":
-        #     self.x_test = temp_data
-        #     self.x_test_file = temp_filename
-        # if data == "Y Test":
-        #     self.y_test = temp_data
-        #     self.y_test_file = temp_filename
-
-        if self.x_test.data is not None and self.y_train.data is not None:
-            if self.x_train.data is not None and self.y_test.data is not None:
-                self.menu.entryconfig(5, state = NORMAL)
-        # except:
-        #     print("Nope")
+            # File not found case
+            print("Nope")
+        print(temp_data)
 
     def prompt_data(self, data):
         prompt = Toplevel(root)
@@ -717,7 +709,13 @@ class NeuralNetwork:
                 self.net_model.add(keras.layers.Activation(input_shape = (2,), activation = 'sigmoid'))
 
             elif current.layer_type == 'Dense':
-                self.net_model.add(keras.layers.Dense(1, input_shape = (2,), activation = 'sigmoid'))
+                if current.function == 'linear':
+                    self.net_model.add(keras.layers.Dense(current.num_neurons,
+                                                          input_shape = (current.prev_layer.num_neurons,)))
+                else:
+                    self.net_model.add(keras.layers.Dense(current.num_neurons,
+                                                          input_shape = (current.prev_layer.num_neurons,),
+                                                          activation = current.function))
 
             elif current.layer_type == 'Dropout':
                 self.net_model.add(keras.layers.Dropout(current.dropout_rate, input_shape = (2,)))
@@ -729,16 +727,13 @@ class NeuralNetwork:
                 pass
             current = current.next_layer
 
-        self.net_model.compile(optimizer = 'adam', loss = 'binary_crossentropy', metrics = ['accuracy'])
-        X, Y = make_classification(n_samples = 1000, n_features = 2, n_redundant = 0, n_informative = 2,
-                                   random_state = 7, n_clusters_per_class = 1)
-        self.net_model.fit(x = X, y = Y, verbose = 0, epochs = 50)
-        print(self.net_model.summary())
-
     def run(self, event = None):
         self.compile_network()
 
         # Train the completed model on the predetermined training data
+        self.net_model.compile(optimizer = 'adam', loss = 'binary_crossentropy', metrics = ['accuracy'])
+        history = self.net_model.fit(x = self.x_train.data, y = self.y_train.data, verbose = 0, epochs = 50)
+        print(self.net_model.predict(self.x_test.data))
         pass
 
         # Predict the results for the predetermined inputs
